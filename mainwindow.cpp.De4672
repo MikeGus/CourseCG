@@ -5,8 +5,6 @@
 #include <QDebug>
 #include "qprismdialog.h"
 #include <QColorDialog>
-#include <QGraphicsPixmapItem>
-#include "beam.h"
 
 MainWindow::MainWindow(QWidget *parent) :
 	QMainWindow(parent),
@@ -21,15 +19,15 @@ MainWindow::MainWindow(QWidget *parent) :
 	ui->graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	scene.setSceneRect(-screen_size_x / 2, -screen_size_y / 2, screen_size_x, screen_size_y);
 
-	pixmap = new QPixmap(screen_size_x, screen_size_y);
+	pixmap = new QPixmap(screen_size, screen_size);
 	painter = new QPainter(pixmap);
 }
 
 MainWindow::~MainWindow()
 {
-	delete painter;
-	delete pixmap;
 	delete ui;
+	delete pixmap;
+	delete painter;
 }
 
 void MainWindow::on_actionInfo_triggered()
@@ -228,7 +226,7 @@ void MainWindow::visualize_carcass()
 		if (manager.check_visible(light)) {
 			Point coord = light.coordinates;
 			Point coord2(coord);
-			coord2.set_x(coord2.get_x() + 10);
+			coord2.x += 10;
 			QPoint p = manager.camera.to_screen(coord);
 			QPoint p2 = manager.camera.to_screen(coord2);
 
@@ -244,19 +242,15 @@ void MainWindow::visualize_carcass()
 
 void MainWindow::visualize_trass() {
 
-	QColor color;
-
 	for (int x = 0; x < screen_size_x; ++x) {
 		for (int y = 0; y < screen_size_y; ++y) {
-			Beam beam = manager.camera.get_initial_beam(x, y);
-
+			QColor color(manager.camera.get_point_color(x, y));
 			painter->setPen(color);
 			painter->drawPoint(x, y);
 		}
 	}
 
-	QGraphicsPixmapItem* it = scene.addPixmap(*pixmap);
-	it->setPos(-screen_size_x / 2, -screen_size_y / 2);
+	scene.addPixmap(*pixmap);
 }
 
 

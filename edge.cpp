@@ -22,10 +22,13 @@ Flatness Edge::egde_flatness()
 		}
 
 		for (int i = 0; i < 3; ++i) {
-			if (i > 0 && points[i].x != points[i - 1].x && points[i].y != points[i - 1].y && points[i].z != points[i - 1].z) {
-				matrix[i][0] = points[i].x;
-				matrix[i][1] = points[i].y;
-				matrix[i][2] = points[i].z;
+			if (i > 0 && points[i].get_x() != points[i - 1].get_x() && \
+					points[i].get_y() != points[i - 1].get_y() && \
+					points[i].get_z() != points[i - 1].get_z()) {
+
+				matrix[i][0] = points[i].get_x();
+				matrix[i][1] = points[i].get_y();
+				matrix[i][2] = points[i].get_z();
 				matrix[i][3] = 1;
 			}
 		}
@@ -89,11 +92,18 @@ bool Edge::in_edge(Point& check, float acc)
 
 	for (auto it_1 = point_vec.begin(); it_1 < point_vec.end() - 1; ++it_1) {
 		for (auto it_2 = it_1 + 1; it_2 < point_vec.end(); ++it_2) {
-			Point main_vec((*it_2).x - (*it_1).x, (*it_2).y - (*it_1).y, (*it_2).z - (*it_1).z);
-			Point sub_vec(check.x - (*it_1).x, check.y - (*it_1).y, check.z - (*it_1).z);
+			Point main_vec((*it_2).get_x() - (*it_1).get_x(),
+						   (*it_2).get_y() - (*it_1).get_y(),
+						   (*it_2).get_z() - (*it_1).get_z());
+
+			Point sub_vec(check.get_x() - (*it_1).get_x(),
+						  check.get_y() - (*it_1).get_y(),
+						  check.get_z() - (*it_1).get_z());
 
 			last = current;
-			current = main_vec.x * sub_vec.x + main_vec.y * sub_vec.y + main_vec.z * sub_vec.z;
+			current = main_vec.get_x() * sub_vec.get_x() + \
+					main_vec.get_y() * sub_vec.get_y() + \
+					main_vec.get_z() * sub_vec.get_z();
 
 			if (current * last < 0) {
 				return false;

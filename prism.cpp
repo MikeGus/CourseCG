@@ -16,7 +16,8 @@ Prism::Prism(Point& global_coordinates, float reflect, float refract, float diff
 	Point buffer_top(global_coordinates);
 	Point buffer_bottom(buffer_top);
 
-	buffer_top.y -= height;
+	buffer_top.set_y(buffer_top.get_y() - height);
+
 	float fi = 0;
 	float dfi = M_PI * 2 / edge_number;
 
@@ -24,12 +25,16 @@ Prism::Prism(Point& global_coordinates, float reflect, float refract, float diff
 	Edge bottom_edge;
 
 	for (unsigned i = 0; i < edge_number; ++i) {
-		buffer_bottom.z = global_coordinates.z + bottom_rad * cos(fi);
-		buffer_bottom.x = global_coordinates.x + bottom_rad * sin(fi);
+
+		float cos_fi = cos(fi);
+		float sin_fi = sin(fi);
+
+		buffer_bottom.set_z(global_coordinates.get_z() + bottom_rad * cos_fi);
+		buffer_bottom.set_x(global_coordinates.get_x() + bottom_rad * sin_fi);
 		bottom_edge.points.push_back(buffer_bottom);
 
-		buffer_top.z = global_coordinates.z + top_rad * cos(fi);
-		buffer_top.x = global_coordinates.x + top_rad * sin(fi);
+		buffer_top.set_z(global_coordinates.get_z() + top_rad * cos_fi);
+		buffer_top.set_x(global_coordinates.get_x() + top_rad * sin_fi);
 		top_edge.points.push_back(buffer_top);
 
 		fi += dfi;
@@ -59,46 +64,34 @@ Prism::Prism(Point& global_coordinates, float reflect, float refract, float diff
 
 void Prism::move(float dx, float dy, float dz)
 {
+	Point change(dx, dy, dz);
 	for (Edge& edge : top_edges) {
 		for (Point& point : edge.points) {
-			point.x += dx;
-			point.y += dy;
-			point.z += dz;
+			point += change;
 		}
 	}
 
 	for (Edge& edge : side_edges) {
 		for (Point& point : edge.points) {
-			point.x += dx;
-			point.y += dy;
-			point.z += dz;
+			point += change;
 		}
 	}
+
+	center += change;
 }
 
 void Prism::rotate(float dxy, float dyz, float dzx)
 {
-	Point cent = center();
-
 	for (Edge& edge : top_edges) {
 		for (Point& point : edge.points) {
 			if (dxy != 0) {
-				float x = cent.x + (point.x - cent.x) * cos(dxy) + (point.y - cent.y) * sin(dxy);
-				float y = cent.y - (point.x - cent.x) * sin(dxy) + (point.y - cent.y) * cos(dxy);
-				point.x = x;
-				point.y = y;
+				point.rotate_dxy(dxy, center);
 			}
 			if (dyz != 0) {
-				float y = cent.y + (point.y - cent.y) * cos(dyz) + (point.z - cent.z) * sin(dyz);
-				float z = cent.z - (point.y - cent.y) * sin(dyz) + (point.z - cent.z) * cos(dyz);
-				point.y = y;
-				point.z = z;
+				point.rotate_dyz(dyz, center);
 			}
 			if (dzx != 0) {
-				float x = cent.x + (point.x - cent.x) * cos(dzx) + (point.z - cent.z) * sin(dzx);
-				float z = cent.z - (point.x - cent.x) * sin(dzx) + (point.z - cent.z) * cos(dzx);
-				point.x = x;
-				point.z = z;
+				point.rotate_dzx(dzx, center);
 			}
 		}
 	}
@@ -106,22 +99,13 @@ void Prism::rotate(float dxy, float dyz, float dzx)
 	for (Edge& edge : side_edges) {
 		for (Point& point : edge.points) {
 			if (dxy != 0) {
-				float x = cent.x + (point.x - cent.x) * cos(dxy) + (point.y - cent.y) * sin(dxy);
-				float y = cent.y - (point.x - cent.x) * sin(dxy) + (point.y - cent.y) * cos(dxy);
-				point.x = x;
-				point.y = y;
+				point.rotate_dxy(dxy, center);
 			}
 			if (dyz != 0) {
-				float y = cent.y + (point.y - cent.y) * cos(dyz) + (point.z - cent.z) * sin(dyz);
-				float z = cent.z - (point.y - cent.y) * sin(dyz) + (point.z - cent.z) * cos(dyz);
-				point.y = y;
-				point.z = z;
+				point.rotate_dyz(dyz, center);
 			}
 			if (dzx != 0) {
-				float x = cent.x + (point.x - cent.x) * cos(dzx) + (point.z - cent.z) * sin(dzx);
-				float z = cent.z - (point.x - cent.x) * sin(dzx) + (point.z - cent.z) * cos(dzx);
-				point.x = x;
-				point.z = z;
+				point.rotate_dzx(dzx, center);
 			}
 		}
 	}
@@ -129,44 +113,49 @@ void Prism::rotate(float dxy, float dyz, float dzx)
 
 void Prism::resize(float k)
 {
-	Point cent = center();
-
 	for (Edge& edge : top_edges) {
 		for (Point& point : edge.points) {
-			point.x = cent.x + k * (point.x - cent.x);
-			point.y = cent.y + k * (point.y - cent.y);
-			point.z = cent.z + k * (point.z - cent.z);
+			point = center + (point - center) * k;
 		}
 	}
 
 	for (Edge& edge : side_edges) {
 		for (Point& point : edge.points) {
-			point.x = cent.x + k * (point.x - cent.x);
-			point.y = cent.y + k * (point.y - cent.y);
-			point.z = cent.z + k * (point.z - cent.z);
+			point = center + (point - center) * k;
 		}
 	}
+
+	radius *= k;
 }
 
-Point Prism::center()
+void Prism::setup_shell()
 {
-	float x = 0;
-	float y = 0;
-	float z = 0;
+	Point combined;
 
 	for (Edge& edge : top_edges) {
 		for (Point& point : edge.points) {
-			x += point.x;
-			y += point.y;
-			z += point.z;
+			combined += point;
 		}
 	}
+
 	unsigned top_num = 2 * side_edges.size();
-	x /= top_num;
-	y /= top_num;
-	z /= top_num;
 
-	Point result(x, y, z);
+	combined *= (1 / top_num);
 
-	return result;
+	center = combined;
+	calculate_radius();
+}
+
+void Prism::calculate_radius()
+{
+	float max_distance = 0;
+	for (Edge& edge : top_edges) {
+		for (Point& point : edge.points) {
+			float distance = point.distance(center);
+			if (distance > max_distance) {
+				max_distance = distance;
+			}
+		}
+	}
+	radius = max_distance;
 }

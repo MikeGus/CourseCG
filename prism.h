@@ -23,9 +23,14 @@ class Prism : public SceneObject
 		float refract;
 		float diff_reflect;
 
-		Point center();
+		Point center;
+		Point radius;
 
 	private:
+		void setup_shell();
+		void calculate_radius();
+
+
 };
 
 #endif // PRISM_H

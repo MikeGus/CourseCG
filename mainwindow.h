@@ -27,6 +27,7 @@ class MainWindow : public QMainWindow
 		~MainWindow();
 
 		void visualize_carcass();
+		void visualize_trass();
 
 	private slots:
 		void on_actionInfo_triggered();
@@ -55,6 +56,8 @@ class MainWindow : public QMainWindow
 		Ui::MainWindow *ui;
 		Manager manager;
 		QGraphicsScene scene;
+		QPixmap* pixmap;
+		QPainter* painter;
 
 };
 
