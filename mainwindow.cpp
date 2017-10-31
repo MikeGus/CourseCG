@@ -183,8 +183,8 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
 				break;
 		}
 	}
-	scene.clear();
-	visualize_carcass();
+//	visualize_carcass();
+	visualize_trass();
 }
 
 void MainWindow::on_listWidget_currentRowChanged(int currentRow)
@@ -202,6 +202,7 @@ void MainWindow::on_listWidget_2_currentRowChanged(int currentRow)
 
 void MainWindow::visualize_carcass()
 {
+	scene.clear();
 	Point p1;
 	Point p2;
 
@@ -244,13 +245,29 @@ void MainWindow::visualize_carcass()
 
 void MainWindow::visualize_trass() {
 
-	QColor color;
 
+	scene.clear();
+	QColor color;
 	for (int x = 0; x < screen_size_x; ++x) {
 		for (int y = 0; y < screen_size_y; ++y) {
 			Beam beam = manager.camera.get_initial_beam(x, y);
 
-			painter->setPen(color);
+			bool prism_present = false;
+
+			for (Prism& prism : manager.prism_list) {
+				if (beam.orb_visible(prism.center, prism.radius)) {
+					prism_present = true;
+				}
+			}
+
+			if (prism_present) {
+				painter->setPen("black");
+			}
+			else {
+				painter->setPen("white");
+			}
+
+//			painter->setPen(color);
 			painter->drawPoint(x, y);
 		}
 	}

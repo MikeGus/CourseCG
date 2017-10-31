@@ -60,6 +60,8 @@ Prism::Prism(Point& global_coordinates, float reflect, float refract, float diff
 	buffer.points.push_back(bottom_edge.points[edge_number - 1]);
 
 	side_edges.push_back(buffer);
+
+	setup_shell();
 }
 
 void Prism::move(float dx, float dy, float dz)

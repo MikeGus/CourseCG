@@ -10,7 +10,7 @@ float Point::distance(const Point& other) {
 	float dy = get_dy(other);
 	float dz = get_dz(other);
 
-	return sqrt(dx * dx + dy * dy + dz * dz);
+	return sqrtf(dx * dx + dy * dy + dz * dz);
 }
 
 

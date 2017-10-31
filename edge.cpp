@@ -92,13 +92,8 @@ bool Edge::in_edge(Point& check, float acc)
 
 	for (auto it_1 = point_vec.begin(); it_1 < point_vec.end() - 1; ++it_1) {
 		for (auto it_2 = it_1 + 1; it_2 < point_vec.end(); ++it_2) {
-			Point main_vec((*it_2).get_x() - (*it_1).get_x(),
-						   (*it_2).get_y() - (*it_1).get_y(),
-						   (*it_2).get_z() - (*it_1).get_z());
-
-			Point sub_vec(check.get_x() - (*it_1).get_x(),
-						  check.get_y() - (*it_1).get_y(),
-						  check.get_z() - (*it_1).get_z());
+			Point main_vec(*it_2 - *it_1);
+			Point sub_vec(check - *it_1);
 
 			last = current;
 			current = main_vec.get_x() * sub_vec.get_x() + \
