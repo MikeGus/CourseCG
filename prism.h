@@ -10,21 +10,22 @@
 class Prism : public SceneObject
 {
 	public:
-		Prism(Point& global_coordinates, float reflect=0.3, float refract=0.3, float diff_reflect=0.3, float height=1, float top_rad=1, float bottom_rad=1, unsigned edge_number=3);
+		Prism() = default;
+		Prism(Point& global_coordinates, double reflect=0.3, double refract=0.3, double diff_reflect=0.3, double height=1, double top_rad=1, double bottom_rad=1, unsigned edge_number=3);
 
-		void move(float dx, float dy, float dz);
-		void rotate(float dxy, float dyz, float dzx);
-		void resize(float k);
+		void move(double dx, double dy, double dz);
+		void rotate(double dxy, double dyz, double dzx);
+		void resize(double k);
 
 		std::vector<Edge> side_edges;
 		std::vector<Edge> top_edges;
 
-		float reflect;
-		float refract;
-		float diff_reflect;
+		double reflect;
+		double refract;
+		double diff_reflect;
 
 		Point center;
-		float radius;
+		double radius;
 
 	private:
 		void setup_shell();

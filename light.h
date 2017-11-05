@@ -12,9 +12,9 @@ class Light : public SceneObject {
 		Point coordinates;
 		QColor intensity;
 
-		void move(float dx, float dy, float dz);
-		void rotate(float dxy, float dyz, float dzx);
-		void resize(float k);
+		void move(double dx, double dy, double dz);
+		void rotate(double dxy, double dyz, double dzx);
+		void resize(double k);
 };
 
 #endif // LIGHT_H

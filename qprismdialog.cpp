@@ -88,17 +88,17 @@ void PrismDialog::setUpGUI()
 void PrismDialog::slotAcceptPrism()
 {
 	Point coord(0,0,0);
-	float btm_rad = editBottomRad->text().replace(",",".").toFloat();
-	float top_rad = editTopRad->text().replace(",",".").toFloat();
+	double btm_rad = editBottomRad->text().replace(",",".").toDouble();
+	double top_rad = editTopRad->text().replace(",",".").toDouble();
 
 	if (btm_rad != 0 || top_rad != 0) {
-		float height = editHeight->text().replace(",",".").toFloat();
+		double height = editHeight->text().replace(",",".").toDouble();
 		if (height != 0) {
 			int edges = editEdges->text().replace(",",".").toInt();
 			if (edges > 2) {
-				float reflect = editReflection->text().replace(",",".").toFloat();
-				float refract = editRefraction->text().replace(",",".").toFloat();
-				float difreflect = editDifReflection->text().replace(",",".").toFloat();
+				double reflect = editReflection->text().replace(",",".").toDouble();
+				double refract = editRefraction->text().replace(",",".").toDouble();
+				double difreflect = editDifReflection->text().replace(",",".").toDouble();
 
 				if (reflect + refract + difreflect <= 1) {
 					Prism prism(coord, reflect, refract, difreflect, height, top_rad, btm_rad, edges);

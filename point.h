@@ -4,24 +4,27 @@
 class Point
 {
 	public:
-		Point(const float x=0, const float y=0, const float z=0);
+		Point(const double x=0, const double y=0, const double z=0);
 
-		float distance(const Point& other);
+		double distance(const Point& other) const;
+		double distance_zero() const;
 
-		float get_dx(const Point& other) const;
-		float get_dy(const Point& other) const;
-		float get_dz(const Point& other) const;
+		double get_dx(const Point& other) const;
+		double get_dy(const Point& other) const;
+		double get_dz(const Point& other) const;
 
-		void set_x(const float x);
-		void set_y(const float y);
-		void set_z(const float z);
+		void set_x(const double x);
+		void set_y(const double y);
+		void set_z(const double z);
 
-		float get_x() const;
-		float get_y() const;
-		float get_z() const;
+		Point& set(const double x, const double y, const double z);
 
-		Point operator*(const float k);
-		Point& operator*=(const float k);
+		double get_x() const;
+		double get_y() const;
+		double get_z() const;
+
+		Point operator*(const double k) const;
+		Point& operator*=(const double k);
 
 		Point& operator+=(const Point& other);
 		Point& operator-=(const Point& other);
@@ -29,14 +32,21 @@ class Point
 		Point operator+(const Point& other) const;
 		Point operator-(const Point& other) const;
 
-		void rotate_dxy(const float dxy, const Point& center);
-		void rotate_dyz(const float dyz, const Point& center);
-		void rotate_dzx(const float dzx, const Point& center);
+		Point operator-() const;
+		bool operator==(const Point& other) const;
+		bool operator!=(const Point& other) const;
+
+		double scalar(const Point& other) const;
+		double angle(const Point& other) const;
+
+		void rotate_dxy(const double dxy, const Point& center);
+		void rotate_dyz(const double dyz, const Point& center);
+		void rotate_dzx(const double dzx, const Point& center);
 
 	private:
-		float x;
-		float y;
-		float z;
+		double x;
+		double y;
+		double z;
 
 };
 

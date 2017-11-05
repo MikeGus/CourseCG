@@ -5,7 +5,7 @@ Camera::Camera(const Point& coordinates, const Point& direction): coordinates(co
 
 QPoint Camera::to_screen(const Point& p)
 {
-	float k = 1;
+	double k = 1;
 	if (p.get_z() != coordinates.get_z()) {
 		k = 1 - p.get_z() / coordinates.get_z();
 	}
@@ -13,7 +13,7 @@ QPoint Camera::to_screen(const Point& p)
 	return point;
 }
 
-bool Camera::point_visible(const Point &p)
+bool Camera::point_visible(const Point &p) const
 {
 	Point check(p - coordinates);
 
@@ -36,3 +36,4 @@ Beam Camera::get_initial_beam(int x, int y) {
 
 	return initial_beam;
 }
+

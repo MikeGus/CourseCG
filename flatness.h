@@ -6,14 +6,16 @@ class Point;
 class Flatness
 {
 	public:
-		Flatness(float A=0, float B=0, float C=0, float D=0);
+		Flatness(double A=0, double B=0, double C=0, double D=0);
 
-		bool in_flatness(Point& check, float acc=1e-4);
+		bool in_flatness(const Point& check, double acc=1e-4) const;
 
-		float a;
-		float b;
-		float c;
-		float d;
+		Point normal() const;
+
+		double a;
+		double b;
+		double c;
+		double d;
 };
 
 #endif // FLATNESS_H

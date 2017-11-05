@@ -3,18 +3,18 @@
 
 Light::Light(Point &coordinates, QColor intensity): coordinates(coordinates), intensity(intensity) {}
 
-void Light::move(float dx, float dy, float dz)
+void Light::move(double dx, double dy, double dz)
 {
 	Point change(dx, dy, dz);
 	coordinates += change;
 }
 
-void Light::rotate(float dxy, float dyz, float dzx)
+void Light::rotate(double dxy, double dyz, double dzx)
 {
 	return;
 }
 
-void Light::resize(float k)
+void Light::resize(double k)
 {
 	return;
 }

@@ -10,9 +10,9 @@
 #include "prism.h"
 #include "manager.h"
 
-const float move_speed = 5;
-const float rotate_speed = 0.1;
-const float resize_speed = 1.1;
+const double move_speed = 5;
+const double rotate_speed = 0.1;
+const double resize_speed = 1.1;
 
 namespace Ui {
 	class MainWindow;
@@ -51,6 +51,10 @@ class MainWindow : public QMainWindow
 		void on_listWidget_pressed(const QModelIndex &);
 
 		void on_listWidget_2_pressed(const QModelIndex &);
+
+		void on_radioButton_toggled(bool checked);
+
+		void on_radioButton_2_toggled(bool checked);
 
 	private:
 		Ui::MainWindow *ui;

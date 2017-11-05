@@ -5,8 +5,8 @@
 
 const unsigned MINEDGENUM = 3;
 
-Prism::Prism(Point& global_coordinates, float reflect, float refract, float diff_reflect,
-			 float height, float top_rad, float bottom_rad, unsigned edge_number): reflect(reflect),
+Prism::Prism(Point& global_coordinates, double reflect, double refract, double diff_reflect,
+			 double height, double top_rad, double bottom_rad, unsigned edge_number): reflect(reflect),
 	refract(refract), diff_reflect(diff_reflect)
 {
 	if (edge_number < MINEDGENUM) {
@@ -18,16 +18,16 @@ Prism::Prism(Point& global_coordinates, float reflect, float refract, float diff
 
 	buffer_top.set_y(buffer_top.get_y() - height);
 
-	float fi = 0;
-	float dfi = M_PI * 2 / edge_number;
+	double fi = 0;
+	double dfi = M_PI * 2 / edge_number;
 
 	Edge top_edge;
 	Edge bottom_edge;
 
 	for (unsigned i = 0; i < edge_number; ++i) {
 
-		float cos_fi = cos(fi);
-		float sin_fi = sin(fi);
+		double cos_fi = cos(fi);
+		double sin_fi = sin(fi);
 
 		buffer_bottom.set_z(global_coordinates.get_z() + bottom_rad * cos_fi);
 		buffer_bottom.set_x(global_coordinates.get_x() + bottom_rad * sin_fi);
@@ -64,7 +64,7 @@ Prism::Prism(Point& global_coordinates, float reflect, float refract, float diff
 	setup_shell();
 }
 
-void Prism::move(float dx, float dy, float dz)
+void Prism::move(double dx, double dy, double dz)
 {
 	Point change(dx, dy, dz);
 	for (Edge& edge : top_edges) {
@@ -82,7 +82,7 @@ void Prism::move(float dx, float dy, float dz)
 	center += change;
 }
 
-void Prism::rotate(float dxy, float dyz, float dzx)
+void Prism::rotate(double dxy, double dyz, double dzx)
 {
 	for (Edge& edge : top_edges) {
 		for (Point& point : edge.points) {
@@ -113,7 +113,7 @@ void Prism::rotate(float dxy, float dyz, float dzx)
 	}
 }
 
-void Prism::resize(float k)
+void Prism::resize(double k)
 {
 	for (Edge& edge : top_edges) {
 		for (Point& point : edge.points) {
@@ -150,10 +150,10 @@ void Prism::setup_shell()
 
 void Prism::calculate_radius()
 {
-	float max_distance = 0;
+	double max_distance = 0;
 	for (Edge& edge : top_edges) {
 		for (Point& point : edge.points) {
-			float distance = point.distance(center);
+			double distance = point.distance(center);
 			if (distance > max_distance) {
 				max_distance = distance;
 			}

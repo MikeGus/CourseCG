@@ -5,7 +5,7 @@
 #include <QPoint>
 #include <QColor>
 
-const float screen_distance = 300;
+const double screen_distance = 300;
 const int screen_size_x = 600;
 const int screen_size_y = 480;
 const int screen_size_x_half = screen_size_x / 2;
@@ -19,11 +19,10 @@ class Camera
 
 		Camera(const Point& coordinates, const Point& direction);
 		QPoint to_screen(const Point& p);
-		bool point_visible(const Point& p);
+		bool point_visible(const Point& p) const;
 
 		Beam get_initial_beam(int x, int y);
 
-	private:
 		Point coordinates;
 		Point direction;
 };

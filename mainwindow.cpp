@@ -48,6 +48,9 @@ void MainWindow::on_btnAddPrism_clicked()
 	connect(addPrismDialog, SIGNAL(AcceptPrism(Prism&)), this, SLOT(addPrism(Prism&)));
 	addPrismDialog->exec();
 	ui->graphicsView->setFocus();
+
+	ui->radioButton->toggle();
+	visualize_carcass();
 }
 
 void MainWindow::on_btnDelPrism_clicked()
@@ -65,6 +68,8 @@ void MainWindow::on_btnDelPrism_clicked()
 	}
 
 	scene.clear();
+
+	ui->radioButton->toggle();
 	visualize_carcass();
 }
 
@@ -95,6 +100,8 @@ void MainWindow::on_btnAddLight_clicked()
 
 
 	scene.clear();
+
+	ui->radioButton->toggle();
 	visualize_carcass();
 }
 
@@ -113,6 +120,8 @@ void MainWindow::on_btnDelLight_clicked()
 
 
 	scene.clear();
+
+	ui->radioButton->toggle();
 	visualize_carcass();
 }
 
@@ -183,8 +192,9 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
 				break;
 		}
 	}
-//	visualize_carcass();
-	visualize_trass();
+
+	ui->radioButton->toggle();
+	visualize_carcass();
 }
 
 void MainWindow::on_listWidget_currentRowChanged(int currentRow)
@@ -233,9 +243,9 @@ void MainWindow::visualize_carcass()
 			QPoint p = manager.camera.to_screen(coord);
 			QPoint p2 = manager.camera.to_screen(coord2);
 
-			float dx = p.x() - p2.x();
-			float dy = p.y() - p2.y();
-			float d = sqrt(dx * dx + dy * dy);
+			double dx = p.x() - p2.x();
+			double dy = p.y() - p2.y();
+			double d = sqrt(dx * dx + dy * dy);
 
 			scene.addEllipse(p.x(), p.y(), d, d, QPen(light.intensity));
 		}
@@ -245,29 +255,66 @@ void MainWindow::visualize_carcass()
 
 void MainWindow::visualize_trass() {
 
-
 	scene.clear();
-	QColor color;
 	for (int x = 0; x < screen_size_x; ++x) {
 		for (int y = 0; y < screen_size_y; ++y) {
+
 			Beam beam = manager.camera.get_initial_beam(x, y);
 
-			bool prism_present = false;
+			Point cross_point_nearest;
+			Edge cross_edge_nearest;
+			Prism cross_prism_nearest;
 
-			for (Prism& prism : manager.prism_list) {
-				if (beam.orb_visible(prism.center, prism.radius)) {
-					prism_present = true;
+			bool got_intersection = false;
+
+			for (const Prism& prism : manager.prism_list) {
+				if (beam.cross_prism(prism, cross_point_nearest, cross_edge_nearest, got_intersection)) {
+					cross_prism_nearest = prism;
 				}
 			}
 
-			if (prism_present) {
+			if (!got_intersection) {
 				painter->setPen("black");
 			}
 			else {
-				painter->setPen("white");
+				QColor color("black");
+
+				for (Light& light : manager.light_list) {
+
+					Beam light_beam(light.coordinates, cross_point_nearest);
+					Point buffer_cross_point(cross_point_nearest);
+					Edge buffer_cross_edge(cross_edge_nearest);
+
+					bool changed = false;
+
+					for (const Prism& prism : manager.prism_list) {
+						if (light_beam.cross_prism_with_check(prism, buffer_cross_point, buffer_cross_edge, got_intersection)) {
+							if (!(buffer_cross_edge == cross_edge_nearest)) {
+								changed = true;
+								break;
+							}
+						}
+					}
+					if (!changed) {
+						const double coefficient = cross_prism_nearest.diff_reflect;
+
+						double value = color.redF() + light.intensity.redF() * coefficient;
+						value = value > 1 ? 1 : value;
+						color.setRedF(value);
+
+						value = color.greenF() + light.intensity.greenF() * coefficient;
+						value = value > 1 ? 1 : value;
+						color.setGreenF(value);
+
+						value = color.blueF() + light.intensity.blueF() * coefficient;
+						value = value > 1 ? 1 : value;
+						color.setBlueF(value);
+					}
+				}
+
+				painter->setPen(color);
 			}
 
-//			painter->setPen(color);
 			painter->drawPoint(x, y);
 		}
 	}
@@ -287,8 +334,6 @@ void MainWindow::on_listWidget_pressed(const QModelIndex&)
 	}
 
 	ui->graphicsView->setFocus();
-	scene.clear();
-	visualize_carcass();
 }
 
 void MainWindow::on_listWidget_2_pressed(const QModelIndex&)
@@ -301,7 +346,18 @@ void MainWindow::on_listWidget_2_pressed(const QModelIndex&)
 	}
 
 	ui->graphicsView->setFocus();
-	scene.clear();
-//	visualize_carcass();
-	visualize_trass();
+}
+
+void MainWindow::on_radioButton_toggled(bool checked)
+{
+	if (checked) {
+		visualize_carcass();
+	}
+}
+
+void MainWindow::on_radioButton_2_toggled(bool checked)
+{
+	if (checked) {
+		visualize_trass();
+	}
 }

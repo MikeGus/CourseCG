@@ -3,79 +3,44 @@
 #include "flatness.h"
 #include <cmath>
 #include <vector>
+#include <stdexcept>
 
 const int PTNUM = 3;
 const int COEFNUM = 4;
-const float ACC = 1e-4;
+const double ACC = 1e-4;
 
-Flatness Edge::egde_flatness()
+Flatness Edge::egde_flatness() const
 {
 	Flatness result;
 
-	if (points.size() >= PTNUM) {
-		result.d = 1;
-
-		std::vector<std::vector<float>> matrix;
-		matrix.resize(COEFNUM);
-		for (auto& el : matrix) {
-			el.resize(PTNUM);
-		}
-
-		for (int i = 0; i < 3; ++i) {
-			if (i > 0 && points[i].get_x() != points[i - 1].get_x() && \
-					points[i].get_y() != points[i - 1].get_y() && \
-					points[i].get_z() != points[i - 1].get_z()) {
-
-				matrix[i][0] = points[i].get_x();
-				matrix[i][1] = points[i].get_y();
-				matrix[i][2] = points[i].get_z();
-				matrix[i][3] = 1;
-			}
-		}
-
-		for (int i = 0; i < PTNUM; ++i) {
-			if (fabs(matrix[i][i]) < ACC) {
-				for (int j = i + 1; j < PTNUM; ++j) {
-					if (fabs(matrix[j][i]) > ACC) {
-						std::swap(matrix[i], matrix[j]);
-					}
-				}
-			}
-
-			for (int j = i + 1; j < PTNUM; ++j) {
-				float mult = matrix[j][i] / matrix[i][i];
-
-				for (int k = i; k < COEFNUM; ++k) {
-					matrix[j][k] -= matrix[i][k] * mult;
-				}
-			}
-
-			std::vector<float> results;
-
-			results.resize(4,0);
-			results[3] = 1;
-
-			for (int j = PTNUM - 1; j >= 0; --j) {
-				float sum = 0;
-				for (int k = j + 1; k < COEFNUM; ++k) {
-					sum += (matrix[j][k] * results[k]);
-				}
-
-				sum *= -1;
-				results[j] = sum / matrix[j][j];
-			}
-
-			result.a = results[0];
-			result.b = results[1];
-			result.c = results[2];
-			result.d = results[3];
+	std::vector<Point> base;
+	unsigned j = 0;
+	for (unsigned i = 0; i < points.size() && j < PTNUM; ++i) {
+		if (i == 0 || points[i].distance(base[j - 1]) > ACC) {
+			base.push_back(points[i]);
+			++j;
 		}
 	}
+
+	if (base.size() < PTNUM) {
+		throw std::logic_error("Invalid edge!");
+	}
+
+
+	base[1] -= base[0];
+	base[2] -= base[0];
+
+	result.a = base[1].get_y() * base[2].get_z() - base[1].get_z() * base[2].get_y();
+	result.b = base[1].get_z() * base[2].get_x() - base[1].get_x() * base[2].get_z();
+	result.c = base[1].get_x() * base[2].get_y() - base[1].get_y() * base[2].get_x();
+
+	result.d = - (base[0].get_x() * result.a + base[0].get_y() * result.b + \
+			base[0].get_z() * result.c);
 
 	return result;
 }
 
-bool Edge::in_edge(Point& check, float acc)
+bool Edge::in_edge(const Point& check, double acc) const
 {
 	Flatness ed_flat = egde_flatness();
 
@@ -85,26 +50,44 @@ bool Edge::in_edge(Point& check, float acc)
 	}
 
 	std::vector<Point> point_vec = points;
-	point_vec.push_back(*points.cend());
+	point_vec.push_back(*points.begin());
 
-	float current = 0;
-	float last = 0;
+	Point current(0, 0, 0);
+	Point last(0, 0, 0);
 
-	for (auto it_1 = point_vec.begin(); it_1 < point_vec.end() - 1; ++it_1) {
-		for (auto it_2 = it_1 + 1; it_2 < point_vec.end(); ++it_2) {
-			Point main_vec(*it_2 - *it_1);
-			Point sub_vec(check - *it_1);
+	bool first = true;
 
-			last = current;
-			current = main_vec.get_x() * sub_vec.get_x() + \
-					main_vec.get_y() * sub_vec.get_y() + \
-					main_vec.get_z() * sub_vec.get_z();
+	auto it_1 = point_vec.begin();
+	for (auto it_2 = it_1 + 1; it_2 < point_vec.end(); ++it_1, ++it_2) {
+		Point main_vec(*it_2 - *it_1);
+		Point sub_vec(check - *it_1);
 
-			if (current * last < 0) {
+		last = current;
+
+		current.set_x(main_vec.get_y() * sub_vec.get_z() - main_vec.get_z() * sub_vec.get_y());
+		current.set_y(main_vec.get_z() * sub_vec.get_x() - main_vec.get_x() * sub_vec.get_z());
+		current.set_z(main_vec.get_y() * sub_vec.get_z() - main_vec.get_z() * sub_vec.get_y());
+
+		if (!first) {
+			double scalar = current.get_x() * last.get_x() + \
+					current.get_y() * last.get_y() + current.get_z() * last.get_z();
+			if (scalar < 0) {
 				return false;
 			}
 		}
+		first = false;
 	}
 
-	return (current < 0);
+	return true;
+}
+
+
+bool Edge::operator==(const Edge& other) const {
+	auto this_it = points.cbegin();
+	for (auto other_it = other.points.cbegin(); this_it != points.cend() && other_it != other.points.cend(); ++this_it, ++other_it) {
+		if (*this_it != *other_it) {
+			return false;
+		}
+	}
+	return true;
 }

@@ -10,8 +10,10 @@ class Edge {
 	public:
 		std::vector<Point> points;
 
-		Flatness egde_flatness();
-		bool in_edge(Point& check, float acc=1e-4);
+		Flatness egde_flatness() const;
+		bool in_edge(const Point& check, double acc=1e-4) const;
+
+		bool operator==(const Edge& other) const;
 };
 
 #endif // EDGE_H

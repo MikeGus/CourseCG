@@ -8,7 +8,7 @@
 
 const Point p_c(0, 0, 400);
 const Point p_d(0, 0, -1);
-const float distance = 300;
+const double distance = 300;
 
 class Manager
 {
