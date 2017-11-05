@@ -132,7 +132,7 @@ void Prism::resize(double k)
 
 void Prism::setup_shell()
 {
-	Point combined;
+	Point combined(0, 0, 0);
 
 	for (Edge& edge : top_edges) {
 		for (Point& point : edge.points) {
@@ -142,7 +142,7 @@ void Prism::setup_shell()
 
 	unsigned top_num = 2 * side_edges.size();
 
-	combined *= (1 / top_num);
+	combined *= (1.0 / top_num);
 
 	center = combined;
 	calculate_radius();

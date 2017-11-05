@@ -7,6 +7,8 @@
 #include <QColorDialog>
 #include <QGraphicsPixmapItem>
 #include "beam.h"
+#include "utils.h"
+#include "flatness.h"
 
 MainWindow::MainWindow(QWidget *parent) :
 	QMainWindow(parent),
@@ -145,7 +147,7 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
 		switch(e->key()) {
 //			move
 			case Qt::Key_Q :
-				manager.active_object->move(move_speed, 0, 0);
+				manager.active_object->move(0, 0, -move_speed);
 				break;
 			case Qt::Key_A :
 				manager.active_object->move(-move_speed, 0, 0);
@@ -160,22 +162,22 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
 				manager.active_object->move(0, 0, move_speed);
 				break;
 			case Qt::Key_D:
-				manager.active_object->move(0, 0, -move_speed);
+				manager.active_object->move(move_speed, 0, 0);
 				break;
 //			rotate
-			case Qt::Key_U:
+			case Qt::Key_K:
 				manager.active_object->rotate(0, rotate_speed, 0);
 				break;
-			case Qt::Key_J:
+			case Qt::Key_I:
 				manager.active_object->rotate(0, -rotate_speed, 0);
 				break;
-			case Qt::Key_I:
+			case Qt::Key_U:
 				manager.active_object->rotate(0, 0, rotate_speed);
 				break;
-			case Qt::Key_K:
+			case Qt::Key_O:
 				manager.active_object->rotate(0, 0, -rotate_speed);
 				break;
-			case Qt::Key_O:
+			case Qt::Key_J:
 				manager.active_object->rotate(rotate_speed, 0, 0);
 				break;
 			case Qt::Key_L:
@@ -192,9 +194,11 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
 				break;
 		}
 	}
-
-	ui->radioButton->toggle();
-	visualize_carcass();
+	if (ui->radioButton->isChecked()) {
+		visualize_carcass();
+	} else {
+		visualize_trass();
+	}
 }
 
 void MainWindow::on_listWidget_currentRowChanged(int currentRow)
@@ -247,7 +251,8 @@ void MainWindow::visualize_carcass()
 			double dy = p.y() - p2.y();
 			double d = sqrt(dx * dx + dy * dy);
 
-			scene.addEllipse(p.x(), p.y(), d, d, QPen(light.intensity));
+			scene.addEllipse(p.x(), p.y(), d, d, QPen("black"),
+							 QBrush(light.intensity));
 		}
 	}
 }
@@ -296,19 +301,10 @@ void MainWindow::visualize_trass() {
 						}
 					}
 					if (!changed) {
-						const double coefficient = cross_prism_nearest.diff_reflect;
-
-						double value = color.redF() + light.intensity.redF() * coefficient;
-						value = value > 1 ? 1 : value;
-						color.setRedF(value);
-
-						value = color.greenF() + light.intensity.greenF() * coefficient;
-						value = value > 1 ? 1 : value;
-						color.setGreenF(value);
-
-						value = color.blueF() + light.intensity.blueF() * coefficient;
-						value = value > 1 ? 1 : value;
-						color.setBlueF(value);
+						double angle = light_beam.get_angle(cross_edge_nearest.egde_flatness());
+						change_color(color, light.intensity,
+									 cross_prism_nearest.diff_reflect * fabs(cos(angle)),
+									 light_beam.p1.distance(cross_point_nearest));
 					}
 				}
 
@@ -321,6 +317,23 @@ void MainWindow::visualize_trass() {
 
 	QGraphicsPixmapItem* it = scene.addPixmap(*pixmap);
 	it->setPos(-screen_size_x / 2, -screen_size_y / 2);
+
+	for (Light& light : manager.light_list) {
+		if (manager.check_visible(light)) {
+			Point coord = light.coordinates;
+			Point coord2(coord);
+			coord2.set_x(coord2.get_x() + 10);
+			QPoint p = manager.camera.to_screen(coord);
+			QPoint p2 = manager.camera.to_screen(coord2);
+
+			double dx = p.x() - p2.x();
+			double dy = p.y() - p2.y();
+			double d = sqrt(dx * dx + dy * dy);
+
+			scene.addEllipse(p.x(), p.y(), d, d, QPen("black"),
+							 QBrush(light.intensity));
+		}
+	}
 }
 
 
