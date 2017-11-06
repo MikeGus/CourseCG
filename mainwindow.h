@@ -29,6 +29,8 @@ class MainWindow : public QMainWindow
 		void visualize_carcass();
 		void visualize_trass();
 
+		void draw_lights();
+
 	private slots:
 		void on_actionInfo_triggered();
 

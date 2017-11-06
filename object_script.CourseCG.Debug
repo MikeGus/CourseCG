@@ -1,0 +1,17 @@
+INPUT(
+./debug\main.o
+./debug\mainwindow.o
+./debug\edge.o
+./debug\flatness.o
+./debug\point.o
+./debug\prism.o
+./debug\light.o
+./debug\camera.o
+./debug\qprismdialog.o
+./debug\manager.o
+./debug\beam.o
+./debug\utils.o
+./debug\beam_tree.o
+./debug\moc_mainwindow.o
+./debug\moc_qprismdialog.o
+);

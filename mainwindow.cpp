@@ -144,44 +144,156 @@ void MainWindow::addPrism(Prism& prism)
 void MainWindow::keyPressEvent(QKeyEvent *e)
 {
 	if (manager.active_object != nullptr) {
+		Point zero(0, 0, 0);
 		switch(e->key()) {
 //			move
 			case Qt::Key_Q :
-				manager.active_object->move(0, 0, -move_speed);
+				if (e->modifiers() & Qt::ShiftModifier) {
+					for (Prism& prism : manager.prism_list) {
+						prism.move(0, 0, -move_speed);
+					}
+					for (Light& light : manager.light_list) {
+						light.move(0, 0, -move_speed);
+					}
+				} else {
+					manager.active_object->move(0, 0, -move_speed);
+				}
 				break;
-			case Qt::Key_A :
-				manager.active_object->move(-move_speed, 0, 0);
+
+			case Qt::Key_E:
+				if (e->modifiers() & Qt::ShiftModifier) {
+					for (Prism& prism : manager.prism_list) {
+						prism.move(0, 0, move_speed);
+					}
+					for (Light& light : manager.light_list) {
+						light.move(0, 0, move_speed);
+					}
+				} else {
+					manager.active_object->move(0, 0, move_speed);
+				}
 				break;
 			case Qt::Key_W:
-				manager.active_object->move(0, -move_speed, 0);
+				if (e->modifiers() & Qt::ShiftModifier) {
+					for (Prism& prism : manager.prism_list) {
+						prism.move(0, move_speed, 0);
+					}
+					for (Light& light : manager.light_list) {
+						light.move(0, move_speed, 0);
+					}
+				} else {
+					manager.active_object->move(0, -move_speed, 0);
+				}
 				break;
 			case Qt::Key_S:
-				manager.active_object->move(0, move_speed, 0);
+				if (e->modifiers() & Qt::ShiftModifier) {
+					for (Prism& prism : manager.prism_list) {
+						prism.move(0, -move_speed, 0);
+					}
+					for (Light& light : manager.light_list) {
+						light.move(0, -move_speed, 0);
+					}
+				} else {
+					manager.active_object->move(0, move_speed, 0);
+				}
 				break;
-			case Qt::Key_E:
-				manager.active_object->move(0, 0, move_speed);
+
+			case Qt::Key_A :
+				if (e->modifiers() & Qt::ShiftModifier) {
+					for (Prism& prism : manager.prism_list) {
+						prism.move(move_speed, 0, 0);
+					}
+					for (Light& light : manager.light_list) {
+						light.move(move_speed, 0, 0);
+					}
+				} else {
+					manager.active_object->move(-move_speed, 0, 0);
+				}
 				break;
+
 			case Qt::Key_D:
-				manager.active_object->move(move_speed, 0, 0);
+				if (e->modifiers() & Qt::ShiftModifier) {
+					for (Prism& prism : manager.prism_list) {
+						prism.move(-move_speed, 0, 0);
+					}
+					for (Light& light : manager.light_list) {
+						light.move(-move_speed, 0, 0);
+					}
+				} else {
+					manager.active_object->move(move_speed, 0, 0);
+				}
 				break;
 //			rotate
 			case Qt::Key_K:
-				manager.active_object->rotate(0, rotate_speed, 0);
+				if (e->modifiers() & Qt::ShiftModifier) {
+					for (Prism& prism : manager.prism_list) {
+						prism.rotate(0, -rotate_speed, 0, zero);
+					}
+					for (Light& light : manager.light_list) {
+						light.rotate(0, -rotate_speed, 0, zero);
+					}
+				} else {
+					manager.active_object->rotate(0, rotate_speed, 0);
+				}
 				break;
 			case Qt::Key_I:
-				manager.active_object->rotate(0, -rotate_speed, 0);
-				break;
-			case Qt::Key_U:
-				manager.active_object->rotate(0, 0, rotate_speed);
-				break;
-			case Qt::Key_O:
-				manager.active_object->rotate(0, 0, -rotate_speed);
-				break;
-			case Qt::Key_J:
-				manager.active_object->rotate(rotate_speed, 0, 0);
+				if (e->modifiers() & Qt::ShiftModifier) {
+					for (Prism& prism : manager.prism_list) {
+						prism.rotate(0, rotate_speed, 0, zero);
+					}
+					for (Light& light : manager.light_list) {
+						light.rotate(0, rotate_speed, 0, zero);
+					}
+				} else {
+					manager.active_object->rotate(0, -rotate_speed, 0);
+				}
 				break;
 			case Qt::Key_L:
-				manager.active_object->rotate(-rotate_speed, 0, 0);
+				if (e->modifiers() & Qt::ShiftModifier) {
+					for (Prism& prism : manager.prism_list) {
+						prism.rotate(0, 0, -rotate_speed, zero);
+					}
+					for (Light& light : manager.light_list) {
+						light.rotate(0, 0, -rotate_speed, zero);
+					}
+				} else {
+					manager.active_object->rotate(0, 0, rotate_speed);
+				}
+				break;
+			case Qt::Key_J:
+				if (e->modifiers() & Qt::ShiftModifier) {
+					for (Prism& prism : manager.prism_list) {
+						prism.rotate(0, 0, rotate_speed, zero);
+					}
+					for (Light& light : manager.light_list) {
+						light.rotate(0, 0, rotate_speed, zero);
+					}
+				} else {
+					manager.active_object->rotate(0, 0, -rotate_speed);
+				}
+				break;
+			case Qt::Key_O:
+				if (e->modifiers() & Qt::ShiftModifier) {
+					for (Prism& prism : manager.prism_list) {
+						prism.rotate(-rotate_speed, 0, 0, zero);
+					}
+					for (Light& light : manager.light_list) {
+						light.rotate(-rotate_speed, 0, 0, zero);
+					}
+				} else {
+					manager.active_object->rotate(-rotate_speed, 0, 0);
+				}
+				break;
+			case Qt::Key_U:
+				if (e->modifiers() & Qt::ShiftModifier) {
+					for (Prism& prism : manager.prism_list) {
+						prism.rotate(rotate_speed, 0, 0, zero);
+					}
+					for (Light& light : manager.light_list) {
+						light.rotate(rotate_speed, 0, 0, zero);
+					}
+				} else {
+					manager.active_object->rotate(rotate_speed, 0, 0);
+				}
 				break;
 //			resize
 			case Qt::Key_T:
@@ -236,25 +348,13 @@ void MainWindow::visualize_carcass()
 					scene.addLine(p_1.x(), p_1.y(), p_2.x(), p_2.y());
 				}
 			}
+			p1 = prism.center;
+			p_1 = manager.camera.to_screen(p1);
+			scene.addEllipse(p_1.x(), p_1.y(), 3, 3);
 		}
 	}
 
-	for (Light& light : manager.light_list) {
-		if (manager.check_visible(light)) {
-			Point coord = light.coordinates;
-			Point coord2(coord);
-			coord2.set_x(coord2.get_x() + 10);
-			QPoint p = manager.camera.to_screen(coord);
-			QPoint p2 = manager.camera.to_screen(coord2);
-
-			double dx = p.x() - p2.x();
-			double dy = p.y() - p2.y();
-			double d = sqrt(dx * dx + dy * dy);
-
-			scene.addEllipse(p.x(), p.y(), d, d, QPen("black"),
-							 QBrush(light.intensity));
-		}
-	}
+	draw_lights();
 }
 
 
@@ -318,22 +418,7 @@ void MainWindow::visualize_trass() {
 	QGraphicsPixmapItem* it = scene.addPixmap(*pixmap);
 	it->setPos(-screen_size_x / 2, -screen_size_y / 2);
 
-	for (Light& light : manager.light_list) {
-		if (manager.check_visible(light)) {
-			Point coord = light.coordinates;
-			Point coord2(coord);
-			coord2.set_x(coord2.get_x() + 10);
-			QPoint p = manager.camera.to_screen(coord);
-			QPoint p2 = manager.camera.to_screen(coord2);
-
-			double dx = p.x() - p2.x();
-			double dy = p.y() - p2.y();
-			double d = sqrt(dx * dx + dy * dy);
-
-			scene.addEllipse(p.x(), p.y(), d, d, QPen("black"),
-							 QBrush(light.intensity));
-		}
-	}
+	draw_lights();
 }
 
 
@@ -372,5 +457,26 @@ void MainWindow::on_radioButton_2_toggled(bool checked)
 {
 	if (checked) {
 		visualize_trass();
+	}
+}
+
+
+void MainWindow::draw_lights()
+{
+	for (Light& light : manager.light_list) {
+		if (manager.check_visible(light)) {
+			Point coord = light.coordinates;
+			Point coord2(coord);
+			coord2.set_x(coord2.get_x() + 10);
+			QPoint p = manager.camera.to_screen(coord);
+			QPoint p2 = manager.camera.to_screen(coord2);
+
+			double dx = p.x() - p2.x();
+			double dy = p.y() - p2.y();
+			double d = sqrt(dx * dx + dy * dy);
+
+			scene.addEllipse(p.x(), p.y(), d, d, QPen("black"),
+							 QBrush(light.intensity));
+		}
 	}
 }

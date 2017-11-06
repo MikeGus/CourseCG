@@ -13,6 +13,7 @@ class Beam {
 	public:
 		Point p1;
 		Point p2;
+		Beam() = default;
 		Beam(const Point& p1, const Point& p2);
 
 		double length() const;

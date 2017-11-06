@@ -18,3 +18,22 @@ void Light::resize(double k)
 {
 	return;
 }
+
+
+void Light::rotate(double dxy, double dyz, double dzx, const Point& center)
+{
+	if (dxy != 0) {
+		coordinates.rotate_dxy(dxy, center);
+	}
+	if (dyz != 0) {
+		coordinates.rotate_dyz(dyz, center);
+	}
+	if (dzx != 0) {
+		coordinates.rotate_dzx(dzx, center);
+	}
+}
+
+void Light::resize(double k, const Point& center)
+{
+	return;
+}

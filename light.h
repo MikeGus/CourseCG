@@ -13,8 +13,12 @@ class Light : public SceneObject {
 		QColor intensity;
 
 		void move(double dx, double dy, double dz);
+
 		void rotate(double dxy, double dyz, double dzx);
 		void resize(double k);
+
+		void rotate(double dxy, double dyz, double dzx, const Point& center);
+		void resize(double k, const Point& center);
 };
 
 #endif // LIGHT_H

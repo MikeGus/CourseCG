@@ -18,18 +18,25 @@ void PrismDialog::setUpGUI()
 {
 	QGridLayout* formGridLayout = new QGridLayout(this);
 
-	labelBottomRad = new QLabel(this);
-	labelBottomRad->setText("Радиус ниж. основния");
 	labelTopRad = new QLabel(this);
 	labelTopRad->setText("Радиус вер. основния");
+
+	labelBottomRad = new QLabel(this);
+	labelBottomRad->setText("Радиус ниж. основния");
+
 	labelHeight = new QLabel(this);
 	labelHeight->setText("Высота");
+
 	labelEdges = new QLabel(this);
 	labelEdges->setText("Грани");
-	labelReflection = new QLabel(this);
-	labelReflection->setText("Коэф. зерк. отражения");
+
+
 	labelDifReflection = new QLabel(this);
 	labelDifReflection->setText("Коэф. диф. отражения");
+
+	labelReflection = new QLabel(this);
+	labelReflection->setText("Коэф. зерк. отражения");
+
 	labelRefraction = new QLabel(this);
 	labelRefraction->setText("Коэф. преломления");
 
@@ -39,44 +46,50 @@ void PrismDialog::setUpGUI()
 	buttons->button(QDialogButtonBox::Ok)->setText(tr("Подтвердить"));
 	buttons->button(QDialogButtonBox::Cancel)->setText(tr("Отмена"));
 
-	editBottomRad = new QLineEdit(this);
-	editBottomRad->setValidator(new QDoubleValidator(0, 1000, 1, this));
-	labelBottomRad->setBuddy(editBottomRad);
+
 	editTopRad = new QLineEdit(this);
 	editTopRad->setValidator(new QDoubleValidator(0, 1000, 1, this));
 	labelTopRad->setBuddy(editTopRad);
+
+	editBottomRad = new QLineEdit(this);
+	editBottomRad->setValidator(new QDoubleValidator(0, 1000, 1, this));
+	labelBottomRad->setBuddy(editBottomRad);
+
 	editHeight = new QLineEdit(this);
 	editHeight->setValidator(new QDoubleValidator(0.1, 1000, 1, this));
 	labelHeight->setBuddy(editHeight);
+
 	editEdges = new QLineEdit(this);
 	editEdges->setValidator(new QIntValidator(3, 10000, this));
 	labelEdges->setBuddy(editEdges);
-	editReflection = new QLineEdit(this);
-	editReflection->setValidator(new QDoubleValidator(0, 1, 2, this));
-	labelReflection->setBuddy(editReflection);
+
 	editDifReflection = new QLineEdit(this);
 	editDifReflection->setValidator(new QDoubleValidator(0, 1, 2, this));
 	labelDifReflection->setBuddy(editDifReflection);
+
+	editReflection = new QLineEdit(this);
+	editReflection->setValidator(new QDoubleValidator(0, 1, 2, this));
+	labelReflection->setBuddy(editReflection);
+
 	editRefraction = new QLineEdit(this);
 	editRefraction->setValidator(new QDoubleValidator(0, 1, 2, this));
 	labelRefraction->setBuddy(editRefraction);
 
-	formGridLayout->addWidget(labelBottomRad, 0, 0);
-	formGridLayout->addWidget(labelTopRad, 1, 0);
+	formGridLayout->addWidget(labelTopRad, 0, 0);
+	formGridLayout->addWidget(labelBottomRad, 1, 0);
 	formGridLayout->addWidget(labelHeight, 2, 0);
 	formGridLayout->addWidget(labelEdges, 3, 0);
-	formGridLayout->addWidget(labelReflection, 4, 0);
-	formGridLayout->addWidget(labelDifReflection, 5, 0);
+	formGridLayout->addWidget(labelDifReflection, 4, 0);
+	formGridLayout->addWidget(labelReflection, 5, 0);
 	formGridLayout->addWidget(labelRefraction, 6, 0);
 	formGridLayout->addWidget(buttons, 7, 0, 2, 1);
 
-
-	formGridLayout->addWidget(editBottomRad, 0, 1);
-	formGridLayout->addWidget(editTopRad, 1, 1);
+	formGridLayout->addWidget(editTopRad, 0, 1);
+	formGridLayout->addWidget(editBottomRad, 1, 1);
 	formGridLayout->addWidget(editHeight, 2, 1);
 	formGridLayout->addWidget(editEdges, 3, 1);
-	formGridLayout->addWidget(editReflection, 4, 1);
-	formGridLayout->addWidget(editDifReflection, 5, 1);
+	formGridLayout->addWidget(editDifReflection, 4, 1);
+	formGridLayout->addWidget(editReflection, 5, 1);
 	formGridLayout->addWidget(editRefraction, 6, 1);
 
 	setLayout(formGridLayout);
@@ -100,7 +113,7 @@ void PrismDialog::slotAcceptPrism()
 				double refract = editRefraction->text().replace(",",".").toDouble();
 				double difreflect = editDifReflection->text().replace(",",".").toDouble();
 
-				if (reflect + refract + difreflect <= 1) {
+				if (reflect + refract + difreflect <= 1.001) {
 					Prism prism(coord, reflect, refract, difreflect, height, top_rad, btm_rad, edges);
 					emit AcceptPrism(prism);
 					close();

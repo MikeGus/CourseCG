@@ -2,6 +2,7 @@
 #include "edge.h"
 #include "point.h"
 #include <cmath>
+#include <QDebug>
 
 const unsigned MINEDGENUM = 3;
 
@@ -81,6 +82,67 @@ void Prism::move(double dx, double dy, double dz)
 
 	center += change;
 }
+
+void Prism::rotate(double dxy, double dyz, double dzx, const Point& center)
+{
+	for (Edge& edge : top_edges) {
+		for (Point& point : edge.points) {
+			if (dxy != 0) {
+				point.rotate_dxy(dxy, center);
+			}
+			if (dyz != 0) {
+				point.rotate_dyz(dyz, center);
+			}
+			if (dzx != 0) {
+				point.rotate_dzx(dzx, center);
+			}
+		}
+	}
+
+	for (Edge& edge : side_edges) {
+		for (Point& point : edge.points) {
+			if (dxy != 0) {
+				point.rotate_dxy(dxy, center);
+			}
+			if (dyz != 0) {
+				point.rotate_dyz(dyz, center);
+			}
+			if (dzx != 0) {
+				point.rotate_dzx(dzx, center);
+			}
+		}
+	}
+
+	if (dxy != 0) {
+		this->center.rotate_dxy(dxy, center);
+	}
+	if (dyz != 0) {
+		this->center.rotate_dyz(dyz, center);
+	}
+	if (dzx != 0) {
+		this->center.rotate_dzx(dzx, center);
+	}
+}
+
+void Prism::resize(double k, const Point& center)
+{
+	for (Edge& edge : top_edges) {
+		for (Point& point : edge.points) {
+			point = center + (point - center) * k;
+		}
+	}
+
+	for (Edge& edge : side_edges) {
+		for (Point& point : edge.points) {
+			point = center + (point - center) * k;
+		}
+	}
+
+	this->center = center + (this->center - center) * k;
+
+	radius *= k;
+}
+
 
 void Prism::rotate(double dxy, double dyz, double dzx)
 {

@@ -10,12 +10,12 @@ double Point::distance(const Point& other) const {
 	double dy = get_dy(other);
 	double dz = get_dz(other);
 
-	return sqrtf(dx * dx + dy * dy + dz * dz);
+	return sqrt(dx * dx + dy * dy + dz * dz);
 }
 
 
 double Point::distance_zero() const {
-	return sqrtf(x * x + y * y + z * z);
+	return sqrt(x * x + y * y + z * z);
 }
 
 
