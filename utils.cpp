@@ -4,7 +4,9 @@
 void change_color(QColor& changed_color, QColor& addition, const double reflection_coefficient,
 				  const double distance) {
 
-	double distance_factor = 0.8 + 100 / distance;
+	double distance_factor = 0.5 + 100 / distance;
+	distance_factor = (distance_factor > 1) ? 1 : distance_factor;
+
 	double coefficient = distance_factor * reflection_coefficient;
 
 	double value = changed_color.redF() + addition.redF() * coefficient;

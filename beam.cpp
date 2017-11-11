@@ -42,15 +42,14 @@ bool Beam::orb_visible(const Point& center, const double radius) const {
 bool Beam::cross_edge(const Edge& edge, Point& cross_point, double& t, const double acc) const {
 
 	try {
-		Flatness flatness = edge.egde_flatness();
 
 		double dx = p1.get_dx(p2);
 		double dy = p1.get_dy(p2);
 		double dz = p1.get_dz(p2);
 
-		double t_bottom = flatness.a * dx + flatness.b * dy + flatness.c * dz;
-		double t_top = - (flatness.a * p1.get_x() + flatness.b * p1.get_y() + \
-				flatness.c * p1.get_z() + flatness.d);
+		double t_bottom = edge.flatness.a * dx + edge.flatness.b * dy + edge.flatness.c * dz;
+		double t_top = - (edge.flatness.a * p1.get_x() + edge.flatness.b * p1.get_y() + \
+				edge.flatness.c * p1.get_z() + edge.flatness.d);
 
 		if (t_bottom == 0.0) {
 			t = 0.0;

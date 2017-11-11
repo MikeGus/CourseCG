@@ -19,6 +19,9 @@ Prism::Prism(Point& global_coordinates, double reflect, double refract, double d
 
 	buffer_top.set_y(buffer_top.get_y() - height);
 
+	center = global_coordinates;
+	center.set_y(center.get_y() - height / 2);
+
 	double fi = 0;
 	double dfi = M_PI * 2 / edge_number;
 
@@ -41,28 +44,47 @@ Prism::Prism(Point& global_coordinates, double reflect, double refract, double d
 		fi += dfi;
 	}
 
-	top_edges.push_back(top_edge);
-	top_edges.push_back(bottom_edge);
-
 	Edge buffer;
 	for (unsigned i = 0; i < edge_number - 1; ++i) {
-		buffer.points.push_back(top_edge.points[i]);
-		buffer.points.push_back(top_edge.points[i + 1]);
-		buffer.points.push_back(bottom_edge.points[i + 1]);
-		buffer.points.push_back(bottom_edge.points[i]);
 
+		buffer.points.push_back(top_edge.points[i]);
+		if (top_rad != 0) {
+			buffer.points.push_back(top_edge.points[i + 1]);
+		}
+
+		buffer.points.push_back(bottom_edge.points[i + 1]);
+		if (bottom_rad != 0) {
+			buffer.points.push_back(bottom_edge.points[i]);
+		}
+
+		buffer.setup_flatness();
 		side_edges.push_back(buffer);
 		buffer.points.clear();
 	}
 
 	buffer.points.push_back(top_edge.points[edge_number - 1]);
-	buffer.points.push_back(top_edge.points[0]);
+	if (top_rad != 0) {
+		buffer.points.push_back(top_edge.points[0]);
+	}
 	buffer.points.push_back(bottom_edge.points[0]);
-	buffer.points.push_back(bottom_edge.points[edge_number - 1]);
+	if (bottom_rad !=0) {
+		buffer.points.push_back(bottom_edge.points[edge_number - 1]);
+	}
 
+	buffer.setup_flatness();
 	side_edges.push_back(buffer);
 
-	setup_shell();
+	if (top_rad != 0) {
+		top_edge.setup_flatness();
+		top_edges.push_back(top_edge);
+	}
+
+	if (bottom_rad != 0) {
+		bottom_edge.setup_flatness();
+		top_edges.push_back(bottom_edge);
+	}
+
+	calculate_radius();
 }
 
 void Prism::move(double dx, double dy, double dz)
@@ -72,12 +94,14 @@ void Prism::move(double dx, double dy, double dz)
 		for (Point& point : edge.points) {
 			point += change;
 		}
+		edge.setup_flatness();
 	}
 
 	for (Edge& edge : side_edges) {
 		for (Point& point : edge.points) {
 			point += change;
 		}
+		edge.setup_flatness();
 	}
 
 	center += change;
@@ -97,6 +121,7 @@ void Prism::rotate(double dxy, double dyz, double dzx, const Point& center)
 				point.rotate_dzx(dzx, center);
 			}
 		}
+		edge.setup_flatness();
 	}
 
 	for (Edge& edge : side_edges) {
@@ -111,6 +136,7 @@ void Prism::rotate(double dxy, double dyz, double dzx, const Point& center)
 				point.rotate_dzx(dzx, center);
 			}
 		}
+		edge.setup_flatness();
 	}
 
 	if (dxy != 0) {
@@ -130,12 +156,14 @@ void Prism::resize(double k, const Point& center)
 		for (Point& point : edge.points) {
 			point = center + (point - center) * k;
 		}
+		edge.setup_flatness();
 	}
 
 	for (Edge& edge : side_edges) {
 		for (Point& point : edge.points) {
 			point = center + (point - center) * k;
 		}
+		edge.setup_flatness();
 	}
 
 	this->center = center + (this->center - center) * k;
@@ -158,6 +186,7 @@ void Prism::rotate(double dxy, double dyz, double dzx)
 				point.rotate_dzx(dzx, center);
 			}
 		}
+		edge.setup_flatness();
 	}
 
 	for (Edge& edge : side_edges) {
@@ -172,6 +201,7 @@ void Prism::rotate(double dxy, double dyz, double dzx)
 				point.rotate_dzx(dzx, center);
 			}
 		}
+		edge.setup_flatness();
 	}
 }
 
@@ -181,33 +211,17 @@ void Prism::resize(double k)
 		for (Point& point : edge.points) {
 			point = center + (point - center) * k;
 		}
+		edge.setup_flatness();
 	}
 
 	for (Edge& edge : side_edges) {
 		for (Point& point : edge.points) {
 			point = center + (point - center) * k;
 		}
+		edge.setup_flatness();
 	}
 
 	radius *= k;
-}
-
-void Prism::setup_shell()
-{
-	Point combined(0, 0, 0);
-
-	for (Edge& edge : top_edges) {
-		for (Point& point : edge.points) {
-			combined += point;
-		}
-	}
-
-	unsigned top_num = 2 * side_edges.size();
-
-	combined *= (1.0 / top_num);
-
-	center = combined;
-	calculate_radius();
 }
 
 void Prism::calculate_radius()

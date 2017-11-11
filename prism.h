@@ -32,7 +32,6 @@ class Prism : public SceneObject
 		double radius;
 
 	private:
-		void setup_shell();
 		void calculate_radius();
 
 

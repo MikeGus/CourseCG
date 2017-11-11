@@ -338,15 +338,13 @@ void MainWindow::visualize_carcass()
 	for (Prism& prism : manager.prism_list) {
 		if (manager.check_visible(prism)) {
 			for (Edge& edge : prism.side_edges) {
-				for (int i = 0; i < 3; ++i) {
-					p1 = edge.points[i];
-					p2 = edge.points[i + 1];
-
-					p_1 = manager.camera.to_screen(p1);
-					p_2 = manager.camera.to_screen(p2);
-
-					scene.addLine(p_1.x(), p_1.y(), p_2.x(), p_2.y());
+				QVector<QPoint> polyvector;
+				for (Point& p : edge.points) {
+					polyvector.push_back(manager.camera.to_screen(p));
 				}
+
+				QPolygon polygon(polyvector);
+				scene.addPolygon(polygon);
 			}
 			p1 = prism.center;
 			p_1 = manager.camera.to_screen(p1);
@@ -354,21 +352,20 @@ void MainWindow::visualize_carcass()
 		}
 	}
 
-	draw_lights();
+	draw_lights(false);
 }
 
 
 void MainWindow::visualize_trass() {
 
 	scene.clear();
+	Beam beam = manager.camera.get_initial_beam(0, 0);
+	Point cross_point_nearest;
+	Edge cross_edge_nearest;
+	Prism cross_prism_nearest;
+
 	for (int x = 0; x < screen_size_x; ++x) {
 		for (int y = 0; y < screen_size_y; ++y) {
-
-			Beam beam = manager.camera.get_initial_beam(x, y);
-
-			Point cross_point_nearest;
-			Edge cross_edge_nearest;
-			Prism cross_prism_nearest;
 
 			bool got_intersection = false;
 
@@ -379,7 +376,7 @@ void MainWindow::visualize_trass() {
 			}
 
 			if (!got_intersection) {
-				painter->setPen("black");
+				painter->setPen("white");
 			}
 			else {
 				QColor color("black");
@@ -401,7 +398,7 @@ void MainWindow::visualize_trass() {
 						}
 					}
 					if (!changed) {
-						double angle = light_beam.get_angle(cross_edge_nearest.egde_flatness());
+						double angle = light_beam.get_angle(cross_edge_nearest.flatness);
 						change_color(color, light.intensity,
 									 cross_prism_nearest.diff_reflect * fabs(cos(angle)),
 									 light_beam.p1.distance(cross_point_nearest));
@@ -412,13 +409,16 @@ void MainWindow::visualize_trass() {
 			}
 
 			painter->drawPoint(x, y);
+			beam.p2.set_y(beam.p2.get_y() + 1);
 		}
+		beam.p2.set_x(beam.p2.get_x() + 1);
+		beam.p2.set_y(beam.p2.get_y() - screen_size_y);
 	}
 
 	QGraphicsPixmapItem* it = scene.addPixmap(*pixmap);
 	it->setPos(-screen_size_x / 2, -screen_size_y / 2);
 
-	draw_lights();
+	draw_lights(true);
 }
 
 
@@ -461,11 +461,24 @@ void MainWindow::on_radioButton_2_toggled(bool checked)
 }
 
 
-void MainWindow::draw_lights()
+void MainWindow::draw_lights(bool check)
 {
 	for (Light& light : manager.light_list) {
 		if (manager.check_visible(light)) {
 			Point coord = light.coordinates;
+			if (check) {
+				Point cross_point_nearest;
+				Edge cross_edge_nearest;
+				bool got_intersection = false;
+				Beam beam(manager.camera.coordinates, coord);
+				for (const Prism& prism : manager.prism_list) {
+					beam.cross_prism(prism, cross_point_nearest, cross_edge_nearest, got_intersection);
+				}
+				if (got_intersection && manager.camera.coordinates.distance(cross_point_nearest) <
+						manager.camera.coordinates.distance(coord)) {
+					return;
+				}
+			}
 			Point coord2(coord);
 			coord2.set_x(coord2.get_x() + 10);
 			QPoint p = manager.camera.to_screen(coord);

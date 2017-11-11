@@ -9,17 +9,18 @@ const int PTNUM = 3;
 const int COEFNUM = 4;
 const double ACC = 1e-4;
 
-Flatness Edge::egde_flatness() const
+void Edge::setup_flatness()
 {
 	Flatness result;
 
 	std::vector<Point> base;
-	unsigned j = 0;
-	for (unsigned i = 0; i < points.size() && j < PTNUM; ++i) {
-		if (i == 0 || points[i].distance(base[j - 1]) > ACC) {
-			base.push_back(points[i]);
-			++j;
-		}
+//	unsigned j = 0;
+	for (unsigned i = 0; i < PTNUM; ++i) {
+//		if (i == 0 || points[i].distance(base[j - 1]) > ACC) {
+//			base.push_back(points[i]);
+//			++j;
+//		}
+		base.push_back(points[i]);
 	}
 
 	if (base.size() < PTNUM) {
@@ -37,14 +38,13 @@ Flatness Edge::egde_flatness() const
 	result.d = - (base[0].get_x() * result.a + base[0].get_y() * result.b + \
 			base[0].get_z() * result.c);
 
-	return result;
+	flatness = result;
 }
 
 bool Edge::in_edge(const Point& check, double acc) const
 {
-	Flatness ed_flat = egde_flatness();
 
-	bool in_flat = ed_flat.in_flatness(check, acc);
+	bool in_flat = flatness.in_flatness(check, acc);
 	if (!in_flat) {
 		return false;
 	}
