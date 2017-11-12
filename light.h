@@ -7,6 +7,7 @@
 
 class Light : public SceneObject {
 	public:
+		Light() = default;
 		Light(Point& coordinates, QColor intensity=QColor("white"));
 
 		Point coordinates;

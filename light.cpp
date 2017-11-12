@@ -35,5 +35,6 @@ void Light::rotate(double dxy, double dyz, double dzx, const Point& center)
 
 void Light::resize(double k, const Point& center)
 {
+	coordinates = center + (coordinates - center) * k;
 	return;
 }

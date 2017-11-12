@@ -6,6 +6,7 @@
 #include <QGraphicsScene>
 #include <QPainter>
 #include <QPixmap>
+#include <QTextStream>
 #include <QPoint>
 #include "prism.h"
 #include "manager.h"
@@ -30,6 +31,8 @@ class MainWindow : public QMainWindow
 		void visualize_trass();
 
 		void draw_lights(bool check);
+		void clear_all();
+
 
 	private slots:
 		void on_actionInfo_triggered();
@@ -58,12 +61,23 @@ class MainWindow : public QMainWindow
 
 		void on_radioButton_2_toggled(bool checked);
 
+		void on_actionSave_triggered();
+
+		void on_actionLoad_triggered();
+
 	private:
 		Ui::MainWindow *ui;
 		Manager manager;
 		QGraphicsScene scene;
 		QPixmap* pixmap;
 		QPainter* painter;
+
+		void read_point(QTextStream& stream, Point& point);
+		void read_edge(QTextStream& stream, Edge& edge);
+		void read_color(QTextStream& stream, QColor& color);
+
+		void read_light(QTextStream& stream, Light& light);
+		void read_prism(QTextStream& stream, Prism& prism);
 
 };
 

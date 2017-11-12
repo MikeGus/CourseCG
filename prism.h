@@ -21,6 +21,9 @@ class Prism : public SceneObject
 		void rotate(double dxy, double dyz, double dzx, const Point& center);
 		void resize(double k, const Point& center);
 
+		void calculate_radius();
+
+
 		std::vector<Edge> side_edges;
 		std::vector<Edge> top_edges;
 
@@ -30,10 +33,6 @@ class Prism : public SceneObject
 
 		Point center;
 		double radius;
-
-	private:
-		void calculate_radius();
-
 
 };
 

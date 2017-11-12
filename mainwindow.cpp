@@ -5,6 +5,8 @@
 #include <QDebug>
 #include "qprismdialog.h"
 #include <QColorDialog>
+#include <QFileDialog>
+#include <QString>
 #include <QGraphicsPixmapItem>
 #include "beam.h"
 #include "utils.h"
@@ -144,7 +146,14 @@ void MainWindow::addPrism(Prism& prism)
 void MainWindow::keyPressEvent(QKeyEvent *e)
 {
 	if (manager.active_object != nullptr) {
-		Point zero(0, 0, 0);
+		Point center;
+		for (Light& light : manager.light_list) {
+			center += light.coordinates;
+		}
+		for (Prism& prism : manager.prism_list) {
+			center += prism.center;
+		}
+		center *= (1/(manager.number_of_light() + manager.number_of_prism()));
 		switch(e->key()) {
 //			move
 			case Qt::Key_Q :
@@ -226,10 +235,10 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
 			case Qt::Key_K:
 				if (e->modifiers() & Qt::ShiftModifier) {
 					for (Prism& prism : manager.prism_list) {
-						prism.rotate(0, -rotate_speed, 0, zero);
+						prism.rotate(0, -rotate_speed, 0, center);
 					}
 					for (Light& light : manager.light_list) {
-						light.rotate(0, -rotate_speed, 0, zero);
+						light.rotate(0, -rotate_speed, 0, center);
 					}
 				} else {
 					manager.active_object->rotate(0, rotate_speed, 0);
@@ -238,10 +247,10 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
 			case Qt::Key_I:
 				if (e->modifiers() & Qt::ShiftModifier) {
 					for (Prism& prism : manager.prism_list) {
-						prism.rotate(0, rotate_speed, 0, zero);
+						prism.rotate(0, rotate_speed, 0, center);
 					}
 					for (Light& light : manager.light_list) {
-						light.rotate(0, rotate_speed, 0, zero);
+						light.rotate(0, rotate_speed, 0, center);
 					}
 				} else {
 					manager.active_object->rotate(0, -rotate_speed, 0);
@@ -250,10 +259,10 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
 			case Qt::Key_L:
 				if (e->modifiers() & Qt::ShiftModifier) {
 					for (Prism& prism : manager.prism_list) {
-						prism.rotate(0, 0, -rotate_speed, zero);
+						prism.rotate(0, 0, -rotate_speed, center);
 					}
 					for (Light& light : manager.light_list) {
-						light.rotate(0, 0, -rotate_speed, zero);
+						light.rotate(0, 0, -rotate_speed, center);
 					}
 				} else {
 					manager.active_object->rotate(0, 0, rotate_speed);
@@ -262,10 +271,10 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
 			case Qt::Key_J:
 				if (e->modifiers() & Qt::ShiftModifier) {
 					for (Prism& prism : manager.prism_list) {
-						prism.rotate(0, 0, rotate_speed, zero);
+						prism.rotate(0, 0, rotate_speed, center);
 					}
 					for (Light& light : manager.light_list) {
-						light.rotate(0, 0, rotate_speed, zero);
+						light.rotate(0, 0, rotate_speed, center);
 					}
 				} else {
 					manager.active_object->rotate(0, 0, -rotate_speed);
@@ -274,10 +283,10 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
 			case Qt::Key_O:
 				if (e->modifiers() & Qt::ShiftModifier) {
 					for (Prism& prism : manager.prism_list) {
-						prism.rotate(-rotate_speed, 0, 0, zero);
+						prism.rotate(-rotate_speed, 0, 0, center);
 					}
 					for (Light& light : manager.light_list) {
-						light.rotate(-rotate_speed, 0, 0, zero);
+						light.rotate(-rotate_speed, 0, 0, center);
 					}
 				} else {
 					manager.active_object->rotate(-rotate_speed, 0, 0);
@@ -286,10 +295,10 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
 			case Qt::Key_U:
 				if (e->modifiers() & Qt::ShiftModifier) {
 					for (Prism& prism : manager.prism_list) {
-						prism.rotate(rotate_speed, 0, 0, zero);
+						prism.rotate(rotate_speed, 0, 0, center);
 					}
 					for (Light& light : manager.light_list) {
-						light.rotate(rotate_speed, 0, 0, zero);
+						light.rotate(rotate_speed, 0, 0, center);
 					}
 				} else {
 					manager.active_object->rotate(rotate_speed, 0, 0);
@@ -297,10 +306,28 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
 				break;
 //			resize
 			case Qt::Key_T:
-				manager.active_object->resize(resize_speed);
+				if (e->modifiers() & Qt::ShiftModifier) {
+					for (Prism& prism : manager.prism_list) {
+						prism.resize(resize_speed, center);
+					}
+					for (Light& light : manager.light_list) {
+						light.resize(resize_speed, center);
+					}
+				} else {
+					manager.active_object->resize(resize_speed);
+				}
 				break;
 			case Qt::Key_Y:
-				manager.active_object->resize(1/resize_speed);
+				if (e->modifiers() & Qt::ShiftModifier) {
+					for (Prism& prism : manager.prism_list) {
+						prism.resize(1/resize_speed, center);
+					}
+					for (Light& light : manager.light_list) {
+						light.resize(1/resize_speed, center);
+					}
+				} else {
+					manager.active_object->resize(1/resize_speed);
+				}
 				break;
 			default:
 				break;
@@ -492,4 +519,232 @@ void MainWindow::draw_lights(bool check)
 							 QBrush(light.intensity));
 		}
 	}
+}
+
+void MainWindow::on_actionSave_triggered()
+{
+	QString file_path = QFileDialog::getSaveFileName(this, tr("Сохраните суперпозицию"), "",
+													 tr("Суперпозиция призм (*.pzm);;Все файлы (*)"));
+	if (file_path.isEmpty()) {
+		return;
+	}
+	QFile file(file_path);
+	if (!file.open(QIODevice::WriteOnly)) {
+		QMessageBox::information(this, tr("Невозможно открыть файл"), file.errorString());
+		return;
+	}
+	QTextStream out(&file);
+
+	const QString tab = ("\t");
+	const QString new_line("\r\n");
+	const QString sec_split("-----------------------\r\n");
+	out << "LIGHTS: " << manager.light_list.size() << new_line;
+	for (Light& light : manager.light_list) {
+		out << light.coordinates.get_x() << tab << light.coordinates.get_y() << tab << light.coordinates.get_z() << tab\
+			<< light.intensity.red() << tab << light.intensity.green() << tab << light.intensity.blue() << new_line;
+	}
+	out << sec_split;
+	out << "PRISMS: " << manager.prism_list.size() << new_line;
+	for (Prism& prism : manager.prism_list) {
+		out << prism.center.get_x() << tab << prism.center.get_y() << tab << prism.center.get_z() << new_line \
+			<< tab << prism.diff_reflect << tab << prism.reflect << tab << prism.refract << new_line;
+		out << "TOP_EDGES: " << prism.top_edges.size() << new_line;
+		for (Edge& edge : prism.top_edges) {
+			out << "POINTS: " << edge.points.size() << new_line;
+			for (Point& point : edge.points) {
+				out << point.get_x() << tab << point.get_y() << tab << point.get_z() << new_line;
+			}
+		}
+		out << "SIDE_EDGES: " << prism.side_edges.size() << new_line;
+		for (Edge& edge : prism.side_edges) {
+			out << "POINTS: " << edge.points.size() << new_line;
+			for (Point& point : edge.points) {
+				out << point.get_x() << tab << point.get_y() << tab << point.get_z() << new_line;
+			}
+		}
+	}
+	out << sec_split;
+	file.close();
+}
+
+void MainWindow::on_actionLoad_triggered()
+{
+	QString file_path = QFileDialog::getOpenFileName(this, tr("Выберите файл"), tr(""), tr("*.pzm"));
+	if (file_path.isEmpty()) {
+		return;
+	}
+	QFile file(file_path);
+	if (!file.open(QIODevice::ReadOnly)) {
+		QMessageBox::information(this, tr("Невозможно открыть файл"), file.errorString());
+		return;
+	}
+
+	clear_all();
+
+	QTextStream in(&file);
+	QString sec_split("-----------------------");
+	QString buffer_string;
+
+	in >> buffer_string;
+	if (buffer_string.compare("LIGHTS:") != 0) {
+		QMessageBox::information(this, tr("Файл поврежден"), tr("Формат файла не прошел проверку"));
+		clear_all();
+		return;
+	}
+	int light_number = 0;
+	in >> light_number;
+	for (int i = 0; i < light_number; ++i) {
+		Light buffer_light;
+
+		read_light(in, buffer_light);
+
+		QString str = QString("Источник ") + QString::number(manager.number_of_light());
+		ui->listWidget_2->addItem(str);
+		manager.add_light(buffer_light);
+
+		ui->listWidget_2->setCurrentRow(ui->listWidget_2->count() - 1);
+		manager.active_object = &(manager.light_list[ui->listWidget_2->currentRow()]);
+
+		ui->graphicsView->setFocus();
+	}
+
+	in >> buffer_string;
+	if (buffer_string.compare(sec_split) != 0) {
+		QMessageBox::information(this, tr("Файл поврежден"), tr("Формат файла не прошел проверку"));
+		clear_all();
+		return;
+	}
+
+	in >> buffer_string;
+	if (buffer_string.compare("PRISMS:") != 0) {
+		QMessageBox::information(this, tr("Файл поврежден"), tr("Формат файла не прошел проверку"));
+		clear_all();
+		return;
+	}
+
+	int prism_number = 0;
+	in >> prism_number;
+
+	for (int i = 0; i < prism_number; ++i) {
+		Prism buffer_prism;
+		read_prism(in, buffer_prism);
+
+		QString str = QString("Призма ") + QString::number(manager.number_of_prism());
+
+		ui->listWidget->addItem(str);
+		manager.add_prism(buffer_prism);
+
+		ui->listWidget->setCurrentRow(ui->listWidget->count() - 1);
+		manager.active_object = &(manager.prism_list[ui->listWidget->currentRow()]);
+	}
+
+	ui->radioButton->toggle();
+	visualize_carcass();
+
+	file.close();
+}
+
+
+void MainWindow::clear_all()
+{
+	manager = Manager();
+	ui->listWidget->clear();
+	ui->listWidget_2->clear();
+	scene.clear();
+}
+
+void MainWindow::read_point(QTextStream& stream, Point& point)
+{
+	double buffer_double = 0;
+
+	stream >> buffer_double;
+	point.set_x(buffer_double);
+
+	stream >> buffer_double;
+	point.set_y(buffer_double);
+
+	stream >> buffer_double;
+	point.set_z(buffer_double);
+}
+
+void MainWindow::read_color(QTextStream& stream, QColor& color)
+{
+	int buffer_int = 0;
+
+	stream >> buffer_int;
+	color.setRed(buffer_int);
+
+	stream >> buffer_int;
+	color.setGreen(buffer_int);
+
+	stream >> buffer_int;
+	color.setBlue(buffer_int);
+}
+
+void MainWindow::read_edge(QTextStream& stream, Edge& edge)
+{
+	QString buffer_string;
+	stream >> buffer_string;
+
+	if (buffer_string.compare("POINTS:") != 0) {
+		QMessageBox::information(this, tr("Файл поврежден"), tr("Формат файла не прошел проверку"));
+		clear_all();
+		return;
+	}
+
+	int point_number = 0;
+	stream >> point_number;
+
+	for (int k = 0; k < point_number; ++k) {
+		Point point;
+		read_point(stream, point);
+		edge.points.push_back(point);
+	}
+	edge.setup_flatness();
+}
+
+void MainWindow::read_light(QTextStream& stream, Light& light)
+{
+	read_point(stream, light.coordinates);
+	read_color(stream, light.intensity);
+}
+
+void MainWindow::read_prism(QTextStream& stream, Prism& prism)
+{
+	QString buffer_string;
+
+	read_point(stream, prism.center);
+	stream >> prism.diff_reflect >> prism.reflect >> prism.refract;
+
+	stream >> buffer_string;
+	if (buffer_string.compare("TOP_EDGES:") != 0) {
+		QMessageBox::information(this, tr("Файл поврежден"), tr("Формат файла не прошел проверку"));
+		clear_all();
+		return;
+	}
+
+	int top_edges_number = 0;
+	stream >> top_edges_number;
+	for (int j = 0; j < top_edges_number; ++j) {
+		Edge edge;
+		read_edge(stream, edge);
+		prism.top_edges.push_back(edge);
+	}
+
+	stream >> buffer_string;
+	if (buffer_string.compare("SIDE_EDGES:") != 0) {
+		QMessageBox::information(this, tr("Файл поврежден"), tr("Формат файла не прошел проверку"));
+		clear_all();
+		return;
+	}
+
+	int side_edges_number = 0;
+	stream >> side_edges_number;
+	for (int j = 0; j < side_edges_number; ++j) {
+		Edge edge;
+		read_edge(stream, edge);
+		prism.side_edges.push_back(edge);
+	}
+
+	prism.calculate_radius();
 }
