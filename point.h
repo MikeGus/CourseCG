@@ -5,6 +5,7 @@ class Point
 {
 	public:
 		Point(const double x=0, const double y=0, const double z=0);
+		Point(const Point& other) = default;
 
 		double distance(const Point& other) const;
 		double distance_zero() const;

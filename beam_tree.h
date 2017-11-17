@@ -3,37 +3,44 @@
 
 #include <vector>
 #include "beam.h"
-
-class Light;
-class Prism;
-class Beam;
+#include <QColor>
+#include "light.h"
+#include "edge.h"
 
 const unsigned max_level = 5;
 
 class BeamTreeNode {
+
 	public:
-		Beam current_beam;
+		Beam beam;
+		unsigned level;
+		bool is_light;
+
+		Prism* prism;
+		Edge edge;
+		Light* light;
 
 		BeamTreeNode* parent;
 		BeamTreeNode* reflect;
 		BeamTreeNode* refract;
 
 		BeamTreeNode();
-		BeamTreeNode(Beam& beam, BeamTreeNode* parent, BeamTreeNode* reflect, BeamTreeNode* refract);
+		BeamTreeNode(Beam& beam, unsigned level, bool is_light, Prism* prism, Edge& edge, Light* light,
+					 BeamTreeNode* parent);
 
-		void free_children_recursive();
-		void calculate_children_recursive(const Flatness& flatness, const double k, const std::vector<Prism>& prism_vector,
-										  const std::vector<Light>& light_vector, unsigned level);
+		~BeamTreeNode();
 };
 
 class BeamTree {
 	public:
 		BeamTreeNode* root;
-		BeamTree(Beam& root);
+		BeamTree(Beam& original, Prism* prism, Edge& edge);
 
 		~BeamTree();
 
-		void calculate_beam_map(const std::vector<Prism>& prism_list, const std::vector<Light>& light_list);
+		void calculate_tree(BeamTreeNode* node, std::vector<Prism>& prism_list, std::vector<Light>& light_list);
+		void calculate_color(std::vector<Light>& light_list, std::vector<Prism>& prism_list, BeamTreeNode* node,
+									   QColor& color);
 };
 
 

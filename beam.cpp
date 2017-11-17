@@ -3,6 +3,8 @@
 #include "flatness.h"
 #include "prism.h"
 #include "camera.h"
+#include "light.h"
+#include "utils.h"
 
 #include <cmath>
 #include <QDebug>
@@ -32,6 +34,10 @@ bool Beam::orb_visible(const Point& center, const double radius) const {
 
 	double t_min = (dx * dxc + dy * dyc + dz * dzc) / \
 			(dx * dx + dy * dy + dz * dz);
+
+	if (t_min < 0) {
+		return false;
+	}
 
 	double min_distance = pow(dx * t_min - dxc, 2) + pow(dy * t_min - dyc, 2) + pow(dz * t_min - dzc, 2);
 
@@ -73,7 +79,7 @@ bool Beam::cross_edge(const Edge& edge, Point& cross_point, double& t, const dou
 
 
 double Beam::get_angle(const Flatness& flatness) const {
-	return flatness.normal().angle(-vector());
+	return (-vector()).angle(flatness.normal());
 }
 
 
@@ -82,11 +88,17 @@ Beam Beam::reflected(const Flatness& flatness) const {
 	double angle = get_angle(flatness);
 
 	Point normal_vector_end(flatness.normal());
+	Point beam_vector(vector());
+
+	if (angle > M_PI_2)  {
+		normal_vector_end *= -1;
+		angle = M_PI - angle;
+	}
+
 	normal_vector_end *= (length() * cos(angle) /
 						  normal_vector_end.distance_zero());
 
-	Point shift(vector() + normal_vector_end);
-	Beam result(p2, p1 + shift * 2);
+	Beam result(p2, p1 + (beam_vector + normal_vector_end) * 2);
 
 	return result;
 }
@@ -96,6 +108,12 @@ Beam Beam::refracted(const Flatness& flatness, const double k) const {
 
 	double angle = get_angle(flatness);
 
+	Point normal_vector_end(flatness.normal());
+	if (angle > M_PI_2)  {
+		normal_vector_end *= -1;
+		angle = M_PI - angle;
+	}
+
 	double this_sin = sin(angle);
 	double other_sin = this_sin / k;
 	if (other_sin >= 1) {
@@ -104,7 +122,6 @@ Beam Beam::refracted(const Flatness& flatness, const double k) const {
 		return result;
 	}
 
-	Point normal_vector_end = flatness.normal();
 	normal_vector_end *= (length() * cos(angle) /
 						  normal_vector_end.distance_zero());
 
@@ -128,7 +145,7 @@ bool Beam::cross_prism(const Prism& prism, Point& cross_point, Edge& cross_edge,
 		double t = 0;
 
 		for(const Edge& edge : prism.side_edges) {
-			if (this->cross_edge(edge, buffer_cross_point, t, acc) && (t >= 0.0)) {
+			if (this->cross_edge(edge, buffer_cross_point, t, acc) && (t > 0.001)) {
 				if ((p1.distance(buffer_cross_point) < p1.distance(cross_point)) || !got_intersection) {
 					cross_point = buffer_cross_point;
 					cross_edge = edge;
@@ -139,7 +156,7 @@ bool Beam::cross_prism(const Prism& prism, Point& cross_point, Edge& cross_edge,
 		}
 
 		for(const Edge& edge : prism.top_edges) {
-			if (this->cross_edge(edge, buffer_cross_point, t, acc) && (t >= 0.0)) {
+			if (this->cross_edge(edge, buffer_cross_point, t, acc) && (t > 0.001)) {
 				if ((p1.distance(buffer_cross_point) < p1.distance(cross_point)) || !got_intersection) {
 					cross_point = buffer_cross_point;
 					cross_edge = edge;
@@ -188,3 +205,21 @@ bool Beam::cross_prism_with_check(const Prism& prism, Point& cross_point, Edge& 
 
 	return found;
 }
+
+
+bool Beam::cross_light(const Light& light, const double radius) const {
+	return orb_visible(light.coordinates, radius);
+}
+
+
+Point Beam::cross_light_point(const Light& light, const double radius) const {
+	Point vec(vector());
+	Point cross(light.coordinates);
+	double distance = p1.distance(cross);
+	cross.set_x(cross.get_x() + vec.get_x() * radius / distance);
+	cross.set_y(cross.get_y() + vec.get_y() * radius / distance);
+	cross.set_z(cross.get_z() + vec.get_z() * radius / distance);
+
+	return cross;
+}
+

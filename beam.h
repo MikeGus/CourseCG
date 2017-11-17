@@ -7,6 +7,7 @@ class Flatness;
 class Edge;
 class Prism;
 class Camera;
+class Light;
 
 class Beam {
 
@@ -20,12 +21,17 @@ class Beam {
 		Point vector() const;
 
 		bool orb_visible(const Point& center, const double radius) const;
+
 		bool cross_edge(const Edge& edge, Point& cross_point,
 						double& t, const double acc = 0.5) const;
 		bool cross_prism(const Prism& prism, Point& cross_point, Edge& cross_edge,
 						 bool& got_intersection, const double acc = 0.5) const;
 		bool cross_prism_with_check(const Prism& prism, Point& cross_point, Edge& cross_edge,
 									bool& got_intersection, const double acc = 0.5) const;
+
+		bool cross_light(const Light& light, const double radius = 10) const;
+		Point cross_light_point(const Light& light, const double radius = 10) const;
+
 		Beam reflected(const Flatness& flatness) const;
 		Beam refracted(const Flatness& flatness, const double k) const;
 

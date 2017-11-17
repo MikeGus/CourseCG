@@ -148,7 +148,7 @@ double Point::scalar(const Point& other) const {
 
 
 double Point::angle(const Point& other) const {
-	double cos_angle = scalar(other) / distance_zero() / other.distance_zero();
+	double cos_angle = scalar(other) / (distance_zero() * other.distance_zero());
 	return acos(cos_angle);
 }
 

@@ -11,6 +11,7 @@
 #include "beam.h"
 #include "utils.h"
 #include "flatness.h"
+#include "beam_tree.h"
 
 MainWindow::MainWindow(QWidget *parent) :
 	QMainWindow(parent),
@@ -402,35 +403,31 @@ void MainWindow::visualize_trass() {
 				}
 			}
 
-			if (!got_intersection) {
-				painter->setPen("white");
-			}
-			else {
-				QColor color("black");
+			bool is_light = false;
 
-				for (Light& light : manager.light_list) {
-
-					Beam light_beam(light.coordinates, cross_point_nearest);
-					Point buffer_cross_point(cross_point_nearest);
-					Edge buffer_cross_edge(cross_edge_nearest);
-
-					bool changed = false;
-
-					for (const Prism& prism : manager.prism_list) {
-						if (light_beam.cross_prism_with_check(prism, buffer_cross_point, buffer_cross_edge, got_intersection)) {
-							if (!(buffer_cross_edge == cross_edge_nearest)) {
-								changed = true;
-								break;
-							}
-						}
-					}
-					if (!changed) {
-						double angle = light_beam.get_angle(cross_edge_nearest.flatness);
-						change_color(color, light.intensity,
-									 cross_prism_nearest.diff_reflect * fabs(cos(angle)),
-									 light_beam.p1.distance(cross_point_nearest));
+			for (const Light& light : manager.light_list)  {
+				if (beam.cross_light(light)) {
+					Point cross_point_light(beam.cross_light_point(light));
+					if (!got_intersection
+							|| (beam.p1.distance(cross_point_light) < beam.p1.distance(cross_point_nearest))) {
+						is_light = true;
+						got_intersection = true;
+						cross_point_nearest = cross_point_light;
+						painter->setPen(light.intensity);
 					}
 				}
+			}
+
+			if (!got_intersection && !is_light) {
+				painter->setPen("white");
+			}
+			else if (!is_light) {
+				QColor color("black");
+				Beam for_work(beam.p1, cross_point_nearest);
+				BeamTree tree(for_work, &cross_prism_nearest, cross_edge_nearest);
+				tree.calculate_tree(tree.root, manager.prism_list, manager.light_list);
+
+				tree.calculate_color(manager.light_list, manager.prism_list, tree.root, color);
 
 				painter->setPen(color);
 			}
@@ -445,7 +442,7 @@ void MainWindow::visualize_trass() {
 	QGraphicsPixmapItem* it = scene.addPixmap(*pixmap);
 	it->setPos(-screen_size_x / 2, -screen_size_y / 2);
 
-	draw_lights(true);
+//	draw_lights(true);
 }
 
 
