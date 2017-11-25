@@ -12,6 +12,8 @@
 #include "utils.h"
 #include "flatness.h"
 #include "beam_tree.h"
+#include <thread>
+#include <mutex>
 
 MainWindow::MainWindow(QWidget *parent) :
 	QMainWindow(parent),
@@ -19,7 +21,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
 	ui->setupUi(this);
 	ui->radioButton->toggle();
-	setFixedSize(900, 600);
+	setFixedSize(1280, 680);
 	ui->graphicsView->setFixedSize(screen_size_x, screen_size_y);
 	ui->graphicsView->setScene(&scene);
 	ui->graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -144,9 +146,16 @@ void MainWindow::addPrism(Prism& prism)
 	visualize_carcass();
 }
 
+bool MainWindow::key_event_acceptable(QKeyEvent* e) {
+	int key = e->key();
+	return key == Qt::Key_Q || key == Qt::Key_A || key == Qt::Key_W || key == Qt::Key_S || key == Qt::Key_E
+			|| key == Qt::Key_D || key == Qt::Key_T || key == Qt::Key_Y || key == Qt::Key_U || key == Qt::Key_J
+			|| key == Qt::Key_I || key == Qt::Key_K || key == Qt::Key_O || key == Qt::Key_L;
+}
+
 void MainWindow::keyPressEvent(QKeyEvent *e)
 {
-	if (manager.active_object != nullptr) {
+	if (key_event_acceptable(e) && manager.active_object != nullptr) {
 		Point center;
 		for (Light& light : manager.light_list) {
 			center += light.coordinates;
@@ -331,13 +340,14 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
 				}
 				break;
 			default:
-				break;
+				return;
 		}
-	}
-	if (ui->radioButton->isChecked()) {
-		visualize_carcass();
-	} else {
-		visualize_trass();
+
+		if (ui->radioButton->isChecked()) {
+			visualize_carcass();
+		} else {
+			visualize_trass();
+		}
 	}
 }
 
@@ -383,20 +393,23 @@ void MainWindow::visualize_carcass()
 	draw_lights(false);
 }
 
+void MainWindow::partial_render(unsigned first_line, int size) {
 
-void MainWindow::visualize_trass() {
-
-	scene.clear();
-	Beam beam = manager.camera.get_initial_beam(0, 0);
 	Point cross_point_nearest;
 	Edge cross_edge_nearest;
 	Prism cross_prism_nearest;
+	Beam beam = manager.camera.get_initial_beam(first_line, 0);
 
-	for (int x = 0; x < screen_size_x; ++x) {
+	int max_x = first_line + size;
+	max_x = max_x > screen_size_x ? screen_size_x : max_x;
+
+	for (int x = first_line; x < max_x; ++x) {
 		for (int y = 0; y < screen_size_y; ++y) {
 
-			bool got_intersection = false;
 
+			QColor color("black");
+
+			bool got_intersection = false;
 			for (const Prism& prism : manager.prism_list) {
 				if (beam.cross_prism(prism, cross_point_nearest, cross_edge_nearest, got_intersection)) {
 					cross_prism_nearest = prism;
@@ -404,7 +417,6 @@ void MainWindow::visualize_trass() {
 			}
 
 			bool is_light = false;
-
 			for (const Light& light : manager.light_list)  {
 				if (beam.cross_light(light)) {
 					Point cross_point_light(beam.cross_light_point(light));
@@ -413,36 +425,64 @@ void MainWindow::visualize_trass() {
 						is_light = true;
 						got_intersection = true;
 						cross_point_nearest = cross_point_light;
-						painter->setPen(light.intensity);
+
+						color = light.intensity;
 					}
 				}
 			}
 
 			if (!got_intersection && !is_light) {
-				painter->setPen("white");
+				color = QColor("white");
 			}
 			else if (!is_light) {
-				QColor color("black");
 				Beam for_work(beam.p1, cross_point_nearest);
 				BeamTree tree(for_work, &cross_prism_nearest, cross_edge_nearest);
 				tree.calculate_tree(tree.root, manager.prism_list, manager.light_list);
-
 				tree.calculate_color(manager.light_list, manager.prism_list, tree.root, color);
-
-				painter->setPen(color);
 			}
 
+			mutex.lock();
+			painter->setPen(color);
 			painter->drawPoint(x, y);
+			mutex.unlock();
+
 			beam.p2.set_y(beam.p2.get_y() + 1);
 		}
 		beam.p2.set_x(beam.p2.get_x() + 1);
 		beam.p2.set_y(beam.p2.get_y() - screen_size_y);
 	}
+}
+
+
+void MainWindow::visualize_trass() {
+
+	scene.clear();
+
+	std::clock_t time = clock();
+
+	int threads = 60;
+	double size = screen_size_x / (double) threads + 1;
+
+	std::vector<std::thread> thread_vector;
+
+	unsigned first_line = 0;
+	for (int i = 0; i < threads; ++i) {
+		thread_vector.push_back(std::thread(MainWindow::partial_render, this, first_line, (int) size));
+		first_line += size;
+	}
+
+	for (std::thread& thread : thread_vector) {
+		if (thread.joinable()) {
+			thread.join();
+		}
+	}
 
 	QGraphicsPixmapItem* it = scene.addPixmap(*pixmap);
 	it->setPos(-screen_size_x / 2, -screen_size_y / 2);
 
-//	draw_lights(true);
+	time = clock() - time;
+
+	qDebug() << (double) time / CLOCKS_PER_SEC;
 }
 
 

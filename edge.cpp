@@ -14,12 +14,7 @@ void Edge::setup_flatness()
 	Flatness result;
 
 	std::vector<Point> base;
-//	unsigned j = 0;
 	for (unsigned i = 0; i < PTNUM; ++i) {
-//		if (i == 0 || points[i].distance(base[j - 1]) > ACC) {
-//			base.push_back(points[i]);
-//			++j;
-//		}
 		base.push_back(points[i]);
 	}
 

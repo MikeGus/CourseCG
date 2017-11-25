@@ -10,6 +10,7 @@
 #include <QPoint>
 #include "prism.h"
 #include "manager.h"
+#include <mutex>
 
 const double move_speed = 5;
 const double rotate_speed = 0.1;
@@ -29,6 +30,8 @@ class MainWindow : public QMainWindow
 
 		void visualize_carcass();
 		void visualize_trass();
+
+		void partial_render(unsigned first_line, int size);
 
 		void draw_lights(bool check);
 		void clear_all();
@@ -70,6 +73,7 @@ class MainWindow : public QMainWindow
 		Manager manager;
 		QGraphicsScene scene;
 		QPixmap* pixmap;
+		std::mutex mutex;
 		QPainter* painter;
 
 		void read_point(QTextStream& stream, Point& point);
@@ -78,6 +82,9 @@ class MainWindow : public QMainWindow
 
 		void read_light(QTextStream& stream, Light& light);
 		void read_prism(QTextStream& stream, Prism& prism);
+
+		bool key_event_acceptable(QKeyEvent* e);
+
 
 };
 

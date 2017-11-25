@@ -6,9 +6,11 @@ Camera::Camera(const Point& coordinates, const Point& direction): coordinates(co
 QPoint Camera::to_screen(const Point& p)
 {
 	double k = 1;
+
 	if (p.get_z() != coordinates.get_z()) {
-		k = 1 - p.get_z() / coordinates.get_z();
+		k -= p.get_z() / coordinates.get_z();
 	}
+
 	QPoint point(p.get_x() / k, p.get_y() / k);
 	return point;
 }
