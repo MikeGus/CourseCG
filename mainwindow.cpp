@@ -460,7 +460,7 @@ void MainWindow::visualize_trass() {
 
 	std::clock_t time = clock();
 
-	int threads = 60;
+	int threads = 50;
 	double size = screen_size_x / (double) threads + 1;
 
 	std::vector<std::thread> thread_vector;

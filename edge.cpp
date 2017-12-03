@@ -66,7 +66,7 @@ bool Edge::in_edge(const Point& check, double acc) const
 		if (!first) {
 			double scalar = current.get_x() * last.get_x() + \
 					current.get_y() * last.get_y() + current.get_z() * last.get_z();
-			if (scalar < 0) {
+			if (scalar <= 0) {
 				return false;
 			}
 		}

@@ -1,4 +1,4 @@
-*.pro*
+*.pro.*
 debug/*
 release/*
 *.o
@@ -9,3 +9,5 @@ Makefile*
 *Makefile*
 *.cpp.*
 Makefile
+latex
+html
