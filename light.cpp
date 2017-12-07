@@ -9,12 +9,12 @@ void Light::move(double dx, double dy, double dz)
 	coordinates += change;
 }
 
-void Light::rotate(double dxy, double dyz, double dzx)
+void Light::rotate(double, double, double)
 {
 	return;
 }
 
-void Light::resize(double k)
+void Light::resize(double)
 {
 	return;
 }

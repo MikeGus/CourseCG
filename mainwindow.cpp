@@ -169,10 +169,10 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
 			case Qt::Key_Q :
 				if (e->modifiers() & Qt::ShiftModifier) {
 					for (Prism& prism : manager.prism_list) {
-						prism.move(0, 0, -move_speed);
+						prism.move(0, 0, move_speed);
 					}
 					for (Light& light : manager.light_list) {
-						light.move(0, 0, -move_speed);
+						light.move(0, 0, move_speed);
 					}
 				} else {
 					manager.active_object->move(0, 0, -move_speed);
@@ -182,10 +182,10 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
 			case Qt::Key_E:
 				if (e->modifiers() & Qt::ShiftModifier) {
 					for (Prism& prism : manager.prism_list) {
-						prism.move(0, 0, move_speed);
+						prism.move(0, 0, -move_speed);
 					}
 					for (Light& light : manager.light_list) {
-						light.move(0, 0, move_speed);
+						light.move(0, 0, -move_speed);
 					}
 				} else {
 					manager.active_object->move(0, 0, move_speed);

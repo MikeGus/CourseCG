@@ -100,7 +100,7 @@ void PrismDialog::setUpGUI()
 
 void PrismDialog::slotAcceptPrism()
 {
-	Point coord(0,0,0);
+	Point coord(-1,1,0);
 	double btm_rad = editBottomRad->text().replace(",",".").toDouble();
 	double top_rad = editTopRad->text().replace(",",".").toDouble();
 

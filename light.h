@@ -15,8 +15,8 @@ class Light : public SceneObject {
 
 		void move(double dx, double dy, double dz);
 
-		void rotate(double dxy, double dyz, double dzx);
-		void resize(double k);
+		void rotate(double, double, double);
+		void resize(double);
 
 		void rotate(double dxy, double dyz, double dzx, const Point& center);
 		void resize(double k, const Point& center);
